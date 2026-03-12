@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate deploy && next build",
-    "start": "node .next/standalone/server.js",
+    "build": "prisma generate && prisma migrate deploy && next build && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public",
+    "start": "NODE_ENV=production HOSTNAME=0.0.0.0 node .next/standalone/server.js",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts"
   },
