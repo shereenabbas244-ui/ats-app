@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 const isDev = process.env.NODE_ENV !== "production";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   ...(isDev ? {} : { adapter: PrismaAdapter(prisma) }),
   providers: [
     // Dev-only: enter any email to log in instantly, no password needed
