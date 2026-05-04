@@ -12,6 +12,7 @@ import {
   SettingsIcon,
   LogOutIcon,
   BotIcon,
+  GlobeIcon,
 } from "lucide-react";
 
 const nav = [
@@ -54,6 +55,14 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-gray-100 p-3 space-y-0.5">
+        <Link
+          href="/careers"
+          target="_blank"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+        >
+          <GlobeIcon className="h-4 w-4" />
+          Career Page
+        </Link>
         <Link
           href="/settings"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
