@@ -39,11 +39,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <div className="text-center mb-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 mx-auto mb-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E55B1F] mx-auto mb-4">
               <BriefcaseIcon className="h-7 w-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">TalentFlow ATS</h1>
-            <p className="text-sm text-gray-500 mt-1">AI-powered applicant tracking system</p>
+            <h1 className="text-2xl font-bold text-gray-900">Lobah ATS</h1>
+            <p className="text-sm text-gray-500 mt-1">Lobah Games — Applicant Tracking System</p>
           </div>
 
           {/* Dev Login */}

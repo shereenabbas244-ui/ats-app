@@ -39,25 +39,30 @@ export default async function CareersPage() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative py-28 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#E55B1F]/10 via-transparent to-transparent pointer-events-none" />
-        <p className="text-[#E55B1F] text-sm font-semibold uppercase tracking-widest mb-4">
-          We are Lobah Games
-        </p>
-        <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6">
-          FROM SAUDI ARABIA
-          <br />
-          TO THE WORLD
-        </h1>
-        <p className="text-white/60 text-lg max-w-xl mx-auto mb-10">
-          Join our passionate team and help us create extraordinary gaming experiences that reach players everywhere.
-        </p>
-        <a
-          href="#open-roles"
-          className="inline-block bg-[#E55B1F] hover:bg-[#d04e15] text-white font-bold px-8 py-4 rounded-xl text-base transition-colors"
-        >
-          View Open Roles
-        </a>
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a0a00] via-[#0d0d0d] to-[#0d0d0d]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(229,91,31,0.18)_0%,transparent_65%)]" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{backgroundImage: 'linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)', backgroundSize: '60px 60px'}} />
+
+        <div className="relative z-10">
+          <p className="text-[#E55B1F] text-sm font-semibold uppercase tracking-widest mb-5">
+            We are Lobah Games
+          </p>
+          <h1 className="text-5xl md:text-8xl font-black text-white leading-none tracking-tight mb-6 uppercase">
+            FROM SAUDI ARABIA
+            <br />
+            TO THE WORLD
+          </h1>
+          <p className="text-white/50 text-lg max-w-xl mx-auto mb-10">
+            Join our passionate team and help us create extraordinary gaming experiences that reach players everywhere.
+          </p>
+          <a
+            href="#open-roles"
+            className="inline-block bg-[#E55B1F] hover:bg-[#d04e15] text-white font-bold px-8 py-4 rounded-xl text-base transition-colors"
+          >
+            Explore Open Roles
+          </a>
+        </div>
       </section>
 
       {/* Stats */}
@@ -77,7 +82,7 @@ export default async function CareersPage() {
 
       {/* Open Roles */}
       <section id="open-roles" className="max-w-6xl mx-auto px-6 py-16">
-        <h2 className="text-3xl font-bold text-white mb-2">Open Roles</h2>
+        <h2 className="text-3xl font-black text-white uppercase mb-2">Open Roles</h2>
         <p className="text-white/50 mb-10">
           {jobs.length === 0
             ? "No open positions right now — check back soon."
@@ -133,7 +138,7 @@ export default async function CareersPage() {
 
       {/* Why Lobah */}
       <section className="max-w-6xl mx-auto px-6 py-16 border-t border-white/10">
-        <h2 className="text-3xl font-bold text-white mb-10 text-center">Why Lobah Games?</h2>
+        <h2 className="text-3xl font-black text-white uppercase mb-10 text-center">Why Lobah Games?</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {[
             {
@@ -152,7 +157,7 @@ export default async function CareersPage() {
               desc: "Be part of putting Saudi Arabia on the global gaming map. Our mission is bold, and we mean it.",
             },
           ].map(({ icon, title, desc }) => (
-            <div key={title} className="bg-white/5 border border-white/10 rounded-2xl p-8">
+            <div key={title} className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-[#E55B1F]/30 transition-colors">
               <div className="text-4xl mb-4">{icon}</div>
               <h3 className="text-white font-bold text-lg mb-2">{title}</h3>
               <p className="text-white/50 text-sm leading-relaxed">{desc}</p>

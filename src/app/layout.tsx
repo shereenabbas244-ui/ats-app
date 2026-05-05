@@ -3,8 +3,8 @@ import { Providers } from "@/components/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TalentFlow ATS",
-  description: "AI-powered applicant tracking system with LinkedIn integration",
+  title: "Lobah ATS",
+  description: "Lobah Games — AI-powered applicant tracking system",
 };
 
 export default function RootLayout({
