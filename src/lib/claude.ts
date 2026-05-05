@@ -57,10 +57,11 @@ export interface CandidateInsight {
 // ─── Resume Parsing ──────────────────────────────────────────────────────────
 
 export async function parseResume(resumeText: string): Promise<ParsedResume> {
+  if (!resumeText.trim()) throw new Error("Resume text must not be empty");
   const stream = client.messages.stream({
     model: "claude-opus-4-6",
     max_tokens: 4096,
-    thinking: { type: "adaptive" },
+    thinking: { type: "enabled", budget_tokens: 8000 },
     system: `You are an expert resume parser. Extract structured information from resumes accurately.
 Always return valid JSON matching the exact schema requested. If a field is not found, use null or empty array.`,
     messages: [
@@ -125,10 +126,13 @@ export async function scoreCandidate(
   jobDescription: string,
   jobRequirements: string
 ): Promise<AIScoreResult> {
+  if (!resumeText.trim()) throw new Error("Resume text must not be empty");
+  if (!jobTitle.trim()) throw new Error("Job title must not be empty");
+  if (!jobDescription.trim()) throw new Error("Job description must not be empty");
   const stream = client.messages.stream({
     model: "claude-opus-4-6",
     max_tokens: 4096,
-    thinking: { type: "adaptive" },
+    thinking: { type: "enabled", budget_tokens: 8000 },
     system: `You are an expert recruiter and talent evaluator. Score candidates objectively based on job fit.
 Be fair, thorough, and evidence-based. Return valid JSON only.`,
     messages: [
@@ -191,10 +195,13 @@ export async function generateCandidateInsights(
   jobTitle: string,
   jobDescription: string
 ): Promise<CandidateInsight> {
+  if (!resumeText.trim()) throw new Error("Resume text must not be empty");
+  if (!jobTitle.trim()) throw new Error("Job title must not be empty");
+  if (!jobDescription.trim()) throw new Error("Job description must not be empty");
   const stream = client.messages.stream({
     model: "claude-opus-4-6",
     max_tokens: 2048,
-    thinking: { type: "adaptive" },
+    thinking: { type: "enabled", budget_tokens: 5000 },
     system: `You are an expert interviewer and talent evaluator. Generate actionable insights to help recruiters.`,
     messages: [
       {
@@ -239,10 +246,13 @@ export async function rankCandidates(
   jobDescription: string,
   jobRequirements: string
 ): Promise<Array<{ id: string; score: number; recommendation: string }>> {
+  if (!jobTitle.trim()) throw new Error("Job title must not be empty");
+  if (!jobDescription.trim()) throw new Error("Job description must not be empty");
+  if (candidates.length === 0) throw new Error("At least one candidate is required");
   const stream = client.messages.stream({
     model: "claude-opus-4-6",
     max_tokens: 4096,
-    thinking: { type: "adaptive" },
+    thinking: { type: "enabled", budget_tokens: 8000 },
     system: `You are an expert recruiter. Rank candidates fairly and objectively.`,
     messages: [
       {
