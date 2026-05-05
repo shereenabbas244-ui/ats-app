@@ -13,6 +13,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4",
     "@anthropic-ai/sdk": "^0.78.0",
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/adapter-pg": "^7.4.2",
@@ -39,7 +41,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.18.0",
     "@types/react": "^19",
@@ -47,7 +48,6 @@
     "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
   }
