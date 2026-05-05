@@ -22,6 +22,7 @@ const nav = [
   { label: "Pipeline", href: "/pipeline", icon: KanbanIcon },
   { label: "LinkedIn", href: "/linkedin", icon: LinkedinIcon },
   { label: "AI Tools", href: "/ai", icon: BotIcon },
+  { label: "Settings", href: "/settings", icon: SettingsIcon },
 ];
 
 export function Sidebar() {

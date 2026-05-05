@@ -11,6 +11,7 @@ import {
   UsersIcon,
   LinkedinIcon,
   SparklesIcon,
+  PencilIcon,
 } from "lucide-react";
 import { formatDate, scoreToColor, scoreToLabel } from "@/lib/utils";
 
@@ -94,6 +95,12 @@ export default async function JobDetailPage({
           </div>
         </div>
         <div className="flex gap-2 shrink-0">
+          <Link href={`/jobs/${job.id}/edit`}>
+            <Button variant="outline" size="sm">
+              <PencilIcon className="h-4 w-4" />
+              Edit
+            </Button>
+          </Link>
           <Link href={`/pipeline?jobId=${job.id}`}>
             <Button variant="outline" size="sm">
               View Pipeline
