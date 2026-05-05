@@ -33,9 +33,22 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json() as Record<string, unknown>;
 
+  const { title, department, location, type, status, description, requirements, salaryMin, salaryMax, salaryCurrency } = body;
+
   const job = await prisma.job.update({
     where: { id },
-    data: body,
+    data: {
+      ...(title !== undefined && { title: title as string }),
+      ...(department !== undefined && { department: department as string }),
+      ...(location !== undefined && { location: location as string }),
+      ...(type !== undefined && { type: type as string }),
+      ...(status !== undefined && { status: status as string }),
+      ...(description !== undefined && { description: description as string }),
+      ...(requirements !== undefined && { requirements: requirements as string }),
+      ...(salaryMin !== undefined && { salaryMin: salaryMin ? Number(salaryMin) : null }),
+      ...(salaryMax !== undefined && { salaryMax: salaryMax ? Number(salaryMax) : null }),
+      ...(salaryCurrency !== undefined && { salaryCurrency: salaryCurrency as string }),
+    },
   });
 
   return NextResponse.json(job);
