@@ -15,6 +15,13 @@
   "dependencies": {
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4",
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/pg": "^8.18.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
     "@anthropic-ai/sdk": "^0.78.0",
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/adapter-pg": "^7.4.2",
@@ -41,14 +48,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/pg": "^8.18.0",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "dotenv": "^17.3.1",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "tsx": "^4.21.0",
-    "typescript": "^5"
+    "tsx": "^4.21.0"
   }
 }
