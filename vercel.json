@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npx prisma generate && node scripts/migrate-deploy.mjs && next build",
+  "buildCommand": "npx prisma generate && next build",
   "installCommand": "npm install --include=dev"
 }
