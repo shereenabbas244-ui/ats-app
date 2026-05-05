@@ -5,27 +5,50 @@ export const metadata = {
   description: "Join Lobah Games — Building games from Saudi Arabia to the world.",
 };
 
-function LobahLogo({ height = 40 }: { height?: number }) {
-  const w = height * 3.2;
+function LobahLogo({ height = 38 }: { height?: number }) {
+  const scale = height / 60;
+  const w = Math.round(220 * scale);
   return (
-    <svg height={height} viewBox="0 0 192 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Icon: D-shape with swoosh and 3 dots */}
-      <g>
-        {/* Outer D shape */}
-        <path d="M8 4 C8 4 2 4 2 12 L2 48 C2 56 8 56 8 56 L28 56 C44 56 52 44 52 30 C52 16 44 4 28 4 Z" fill="white" />
-        {/* Inner cutout */}
-        <path d="M12 12 C12 12 8 12 8 18 L8 42 C8 48 12 48 12 48 L26 48 C36 48 42 40 42 30 C42 20 36 12 26 12 Z" fill="#0d0d0d" />
-        {/* Swoosh tail */}
-        <path d="M6 50 C10 58 20 62 32 56 L28 56 C18 58 10 54 6 50 Z" fill="white" />
-        {/* 3 dots (diagonal) */}
-        <circle cx="32" cy="20" r="4" fill="white" />
-        <circle cx="25" cy="30" r="4" fill="white" />
-        <circle cx="18" cy="40" r="4" fill="white" />
-      </g>
-      {/* Lobah text */}
-      <text x="62" y="28" fontFamily="Arial Black, Impact, sans-serif" fontWeight="900" fontStyle="italic" fontSize="26" fill="white" letterSpacing="-0.5">Lobah</text>
-      {/* Arabic لعبة */}
-      <text x="64" y="52" fontFamily="Arial, sans-serif" fontWeight="700" fontStyle="italic" fontSize="20" fill="white">لعبة</text>
+    <svg width={w} height={height} viewBox="0 0 220 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* ── Icon mark ── */}
+      {/* Outer D-shape body */}
+      <path
+        d="M4 6 C4 2 7 0 11 0 L30 0 C48 0 60 13 60 30 C60 47 48 60 30 60 L11 60 C7 60 4 58 4 54 L4 6 Z"
+        fill="white"
+      />
+      {/* Inner cutout to make it hollow / give depth */}
+      <path
+        d="M14 10 L28 10 C42 10 50 19 50 30 C50 41 42 50 28 50 L14 50 Z"
+        fill="#0d0d0d"
+      />
+      {/* Swoosh tail at bottom */}
+      <path
+        d="M4 52 C4 52 8 64 22 60 L11 60 C7 60 4 58 4 54 Z"
+        fill="white"
+      />
+      {/* 3 dots diagonal (top-right → bottom-left) */}
+      <circle cx="38" cy="18" r="6" fill="white" />
+      <circle cx="28" cy="30" r="5" fill="white" />
+      <circle cx="18" cy="42" r="4" fill="white" />
+
+      {/* ── Text ── */}
+      <text
+        x="72" y="30"
+        fontFamily="'Arial Black', 'Impact', sans-serif"
+        fontWeight="900"
+        fontStyle="italic"
+        fontSize="28"
+        fill="white"
+        letterSpacing="-0.5"
+      >Lobah</text>
+      <text
+        x="74" y="54"
+        fontFamily="'Arial', sans-serif"
+        fontWeight="700"
+        fontStyle="italic"
+        fontSize="22"
+        fill="white"
+      >لعبة</text>
     </svg>
   );
 }
