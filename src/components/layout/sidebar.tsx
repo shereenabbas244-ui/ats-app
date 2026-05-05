@@ -30,10 +30,10 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-60 flex-col border-r border-gray-200 bg-white">
       <div className="flex h-16 items-center gap-2 border-b border-gray-100 px-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E55B1F]">
           <BriefcaseIcon className="h-4 w-4 text-white" />
         </div>
-        <span className="text-sm font-bold text-gray-900">TalentFlow ATS</span>
+        <span className="text-sm font-bold text-gray-900">Lobah ATS</span>
       </div>
 
       <nav className="flex-1 space-y-0.5 p-3">
