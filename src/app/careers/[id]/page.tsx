@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LinkIcon, UploadIcon, FileTextIcon, XIcon } from "lucide-react";
+import { LinkIcon, FileTextIcon, XIcon } from "lucide-react";
 
 const JOB_TYPE_LABELS: Record<string, string> = {
   FULL_TIME: "Full Time",
@@ -329,29 +329,16 @@ export default function JobDetailPage() {
                         </button>
                       </div>
                     ) : (
-                      <div className="relative w-full">
-                        {/* Transparent native input sits on top — guarantees the file picker opens on click */}
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          onChange={handleFileChange}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <div className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg py-6 transition-colors pointer-events-none ${formState === "uploading" ? "border-[#E55B1F]/50 bg-[#E55B1F]/5" : "border-white/10"}`}>
-                          {formState === "uploading" ? (
-                            <>
-                              <div className="w-6 h-6 border-2 border-[#E55B1F] border-t-transparent rounded-full animate-spin" />
-                              <span className="text-sm text-white/50">Reading file...</span>
-                            </>
-                          ) : (
-                            <>
-                              <UploadIcon className="h-6 w-6 text-white/30" />
-                              <span className="text-sm text-white/50">Click to upload PDF or Word doc</span>
-                              <span className="text-xs text-white/30">Max 5MB</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleFileChange}
+                        disabled={formState === "uploading"}
+                        className="w-full text-sm text-white/50 cursor-pointer rounded-lg border border-white/10 bg-white/5 p-2.5
+                          file:mr-3 file:py-1.5 file:px-4 file:rounded-lg file:border-0
+                          file:text-sm file:font-semibold file:cursor-pointer
+                          file:bg-[#E55B1F] file:text-white hover:file:bg-[#d04e15]"
+                      />
                     )}
                   </div>
 
