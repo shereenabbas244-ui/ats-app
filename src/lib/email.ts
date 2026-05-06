@@ -1,7 +1,11 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "Lobah Careers <careers@lobah.com>";
+
+function getResend() {
+  if (!process.env.RESEND_API_KEY) return null;
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 export async function sendApplicationConfirmation({
   candidateName,
@@ -12,7 +16,8 @@ export async function sendApplicationConfirmation({
   candidateEmail: string;
   jobTitle: string;
 }) {
-  if (!process.env.RESEND_API_KEY) return;
+  const resend = getResend();
+  if (!resend) return;
   await resend.emails.send({
     from: FROM,
     to: candidateEmail,
@@ -45,7 +50,8 @@ export async function sendNewApplicationAlert({
   jobTitle: string;
   applicationId: string;
 }) {
-  if (!process.env.RESEND_API_KEY) return;
+  const resend = getResend();
+  if (!resend) return;
   const hrEmail = process.env.HR_EMAIL ?? "hr@lobah.com";
   await resend.emails.send({
     from: FROM,
@@ -75,7 +81,8 @@ export async function sendStatusUpdate({
   jobTitle: string;
   status: string;
 }) {
-  if (!process.env.RESEND_API_KEY) return;
+  const resend = getResend();
+  if (!resend) return;
 
   const statusMessages: Record<string, { subject: string; message: string }> = {
     HIRED: {
