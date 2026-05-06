@@ -15,6 +15,7 @@ const applySchema = z.object({
   coverLetter: z.string().optional(),
   resumeData: z.string().optional(),
   resumeFilename: z.string().optional(),
+  resumeText: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -33,6 +34,8 @@ export async function POST(req: NextRequest) {
   // Store resume as base64 data URL in resumeText field
   const resumeText = data.resumeData && data.resumeFilename
     ? `RESUME_FILE:${data.resumeFilename}:${data.resumeData}`
+    : data.resumeText
+    ? `RESUME_TEXT:${data.resumeText}`
     : undefined;
 
   const candidate = await prisma.candidate.upsert({

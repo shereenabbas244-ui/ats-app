@@ -3,14 +3,11 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LinkIcon, FileTextIcon, XIcon } from "lucide-react";
+import { LinkIcon, FileTextIcon, XIcon, PaperclipIcon } from "lucide-react";
 
 const JOB_TYPE_LABELS: Record<string, string> = {
-  FULL_TIME: "Full Time",
-  PART_TIME: "Part Time",
-  CONTRACT: "Contract",
-  INTERNSHIP: "Internship",
-  REMOTE: "Remote",
+  FULL_TIME: "Full Time", PART_TIME: "Part Time",
+  CONTRACT: "Contract", INTERNSHIP: "Internship", REMOTE: "Remote",
 };
 
 interface Job {
@@ -33,7 +30,9 @@ export default function JobDetailPage() {
   const [copied, setCopied] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeData, setResumeData] = useState("");
-  const formRef = useRef<HTMLDivElement>(null);
+  const [resumeText, setResumeText] = useState("");
+  const [resumeTab, setResumeTab] = useState<"file" | "text">("file");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "",
@@ -59,26 +58,29 @@ export default function JobDetailPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      setErrorMsg("File must be under 5MB.");
-      setFormState("error");
-      return;
+      setErrorMsg("File must be under 5MB."); setFormState("error"); return;
     }
     setFormState("reading");
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = (reader.result as string).split(",")[1] ?? "";
-      setResumeFile(file);
-      setResumeData(base64);
-      setFormState("idle");
-      setErrorMsg("");
+      setResumeFile(file); setResumeData(base64);
+      setFormState("idle"); setErrorMsg("");
     };
     reader.onerror = () => { setErrorMsg("Could not read file."); setFormState("error"); };
     reader.readAsDataURL(file);
   }, []);
 
-  function handleShowForm() {
+  function openForm() {
     setShowForm(true);
-    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeForm() {
+    setShowForm(false);
+    setFormState("idle");
+    setErrorMsg("");
+    document.body.style.overflow = "";
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -91,22 +93,25 @@ export default function JobDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           jobId: id, ...form,
-          ...(resumeData && resumeFile ? { resumeData, resumeFilename: resumeFile.name } : {}),
+          ...(resumeTab === "file" && resumeData && resumeFile
+            ? { resumeData, resumeFilename: resumeFile.name }
+            : {}),
+          ...(resumeTab === "text" && resumeText
+            ? { resumeData: btoa(unescape(encodeURIComponent(resumeText))), resumeFilename: "resume.txt" }
+            : {}),
         }),
       });
       const data = await res.json() as { error?: string };
       if (!res.ok) { setErrorMsg(data.error ?? "Something went wrong."); setFormState("error"); }
-      else setFormState("success");
+      else { setFormState("success"); document.body.style.overflow = ""; }
     } catch {
-      setErrorMsg("Network error. Please try again.");
-      setFormState("error");
+      setErrorMsg("Network error. Please try again."); setFormState("error");
     }
   }
 
   function handleCopy() {
     void navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
   }
 
   if (loading) return (
@@ -119,7 +124,7 @@ export default function JobDetailPage() {
 
   const jobUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareText = `Check out this job at Lobah Games: ${job.title}`;
-  const inputClass = "w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#E55B1F] transition-colors";
+  const iClass = "w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#E55B1F] transition-colors";
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-16">
@@ -127,7 +132,6 @@ export default function JobDetailPage() {
         ← Back to all roles
       </Link>
 
-      {/* Job Header */}
       <div className="mt-6 mb-10">
         <div className="flex flex-wrap gap-2 mb-3">
           {job.department && <span className="text-xs font-medium text-[#E55B1F] bg-[#E55B1F]/10 px-2 py-0.5 rounded-full">{job.department}</span>}
@@ -141,7 +145,6 @@ export default function JobDetailPage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-10">
-        {/* Job Details */}
         <div className="md:col-span-2 space-y-8">
           <section>
             <h2 className="text-lg font-bold text-white mb-3 border-b border-white/10 pb-2">About the Role</h2>
@@ -153,33 +156,27 @@ export default function JobDetailPage() {
           </section>
         </div>
 
-        {/* Sidebar */}
         <div className="md:col-span-1 space-y-4">
           <div className="sticky top-24 bg-white/5 border border-white/10 rounded-2xl p-6">
             <h3 className="text-white font-bold text-base mb-1">Interested?</h3>
             <p className="text-white/50 text-sm mb-5">Apply now and join the Lobah Games team.</p>
-            <button onClick={handleShowForm}
-              className="w-full bg-[#E55B1F] hover:bg-[#d04e15] text-white font-bold py-3 rounded-xl transition-colors">
+            <button onClick={openForm} className="w-full bg-[#E55B1F] hover:bg-[#d04e15] text-white font-bold py-3 rounded-xl transition-colors">
               Apply for this role
             </button>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <h3 className="text-white font-bold text-sm mb-3">Share this role</h3>
             <div className="flex flex-col gap-2">
-              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(jobUrl)}`} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg transition-colors">
+              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(jobUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg transition-colors">
                 <span className="font-bold text-[#0A66C2]">in</span> Share on LinkedIn
               </a>
-              <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(jobUrl)}`} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg transition-colors">
+              <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(jobUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg transition-colors">
                 <span className="font-bold text-white">𝕏</span> Share on X
               </a>
-              <a href={`https://wa.me/?text=${encodeURIComponent(shareText + " " + jobUrl)}`} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg transition-colors">
+              <a href={`https://wa.me/?text=${encodeURIComponent(shareText + " " + jobUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg transition-colors">
                 <span className="text-[#25D366]">●</span> Share on WhatsApp
               </a>
-              <button onClick={handleCopy}
-                className="flex items-center gap-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg transition-colors text-left">
+              <button onClick={handleCopy} className="flex items-center gap-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg transition-colors text-left">
                 <LinkIcon className="h-3.5 w-3.5" /> {copied ? "Copied!" : "Copy link"}
               </button>
             </div>
@@ -187,101 +184,125 @@ export default function JobDetailPage() {
         </div>
       </div>
 
-      {/* Inline application form — no modal, no overflow container, file picker always works */}
+      {/* Modal */}
       {showForm && (
-        <div ref={formRef} className="mt-16 border-t border-white/10 pt-12">
-          {formState === "success" ? (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-3xl font-bold text-white mb-3">Application Submitted!</h2>
-              <p className="text-white/60 mb-2">Thanks for applying to <strong>{job.title}</strong>.</p>
-              <p className="text-white/40 text-sm">Check your email for a confirmation. We'll be in touch soon.</p>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-2xl font-bold text-white mb-8">Apply for {job.title}</h2>
-              <form onSubmit={handleSubmit} className="space-y-5 max-w-2xl">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-white/50 mb-1">First Name *</label>
-                    <input name="firstName" required value={form.firstName} onChange={handleChange} className={inputClass} placeholder="Jane" />
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) closeForm(); }}>
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-[#161616] border border-white/10 rounded-2xl w-full max-w-lg p-8 relative">
+
+              {formState === "success" ? (
+                <div className="text-center py-8">
+                  <div className="text-5xl mb-4">🎉</div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Application Submitted!</h2>
+                  <p className="text-white/60 mb-2">Thanks for applying to <strong>{job.title}</strong>.</p>
+                  <p className="text-white/40 text-sm mb-6">Check your email for a confirmation. We&apos;ll be in touch soon.</p>
+                  <button onClick={closeForm} className="bg-[#E55B1F] hover:bg-[#d04e15] text-white font-bold px-6 py-3 rounded-xl transition-colors">Close</button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-white">Apply — {job.title}</h2>
+                    <button onClick={closeForm} className="text-white/40 hover:text-white text-2xl leading-none transition-colors">✕</button>
                   </div>
-                  <div>
-                    <label className="block text-xs text-white/50 mb-1">Last Name *</label>
-                    <input name="lastName" required value={form.lastName} onChange={handleChange} className={inputClass} placeholder="Doe" />
-                  </div>
-                </div>
 
-                <div>
-                  <label className="block text-xs text-white/50 mb-1">Email *</label>
-                  <input name="email" type="email" required value={form.email} onChange={handleChange} className={inputClass} placeholder="jane@example.com" />
-                </div>
+                  {/* Scrollable form content */}
+                  <div className="overflow-y-auto max-h-[70vh] pr-1">
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-white/50 mb-1">First Name *</label>
+                          <input name="firstName" required value={form.firstName} onChange={handleChange} className={iClass} placeholder="Jane" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-white/50 mb-1">Last Name *</label>
+                          <input name="lastName" required value={form.lastName} onChange={handleChange} className={iClass} placeholder="Doe" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-white/50 mb-1">Email *</label>
+                        <input name="email" type="email" required value={form.email} onChange={handleChange} className={iClass} placeholder="jane@example.com" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-white/50 mb-1">Phone</label>
+                        <input name="phone" type="tel" value={form.phone} onChange={handleChange} className={iClass} placeholder="+966 5x xxx xxxx" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-white/50 mb-1">Current Title</label>
+                        <input name="currentTitle" value={form.currentTitle} onChange={handleChange} className={iClass} placeholder="Senior Engineer" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-white/50 mb-1">Location</label>
+                        <input name="location" value={form.location} onChange={handleChange} className={iClass} placeholder="Riyadh, Saudi Arabia" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-white/50 mb-1">LinkedIn URL</label>
+                        <input name="linkedinUrl" type="url" value={form.linkedinUrl} onChange={handleChange} className={iClass} placeholder="https://linkedin.com/in/..." />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-white/50 mb-1">Cover Letter</label>
+                        <textarea name="coverLetter" value={form.coverLetter} onChange={handleChange} rows={3} className={`${iClass} resize-none`} placeholder="Tell us why you'd be a great fit..." />
+                      </div>
 
-                <div>
-                  <label className="block text-xs text-white/50 mb-1">Phone</label>
-                  <input name="phone" type="tel" value={form.phone} onChange={handleChange} className={inputClass} placeholder="+966 5x xxx xxxx" />
-                </div>
+                      {/* Resume — two options */}
+                      <div>
+                        <label className="block text-xs text-white/50 mb-2">Resume / CV</label>
+                        <div className="flex rounded-lg overflow-hidden border border-white/10 mb-3">
+                          <button type="button" onClick={() => setResumeTab("file")}
+                            className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${resumeTab === "file" ? "bg-[#E55B1F] text-white" : "bg-white/5 text-white/50 hover:text-white"}`}>
+                            <PaperclipIcon className="h-3.5 w-3.5" /> Attach File
+                          </button>
+                          <button type="button" onClick={() => setResumeTab("text")}
+                            className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${resumeTab === "text" ? "bg-[#E55B1F] text-white" : "bg-white/5 text-white/50 hover:text-white"}`}>
+                            <FileTextIcon className="h-3.5 w-3.5" /> Paste Text
+                          </button>
+                        </div>
 
-                <div>
-                  <label className="block text-xs text-white/50 mb-1">Current Title</label>
-                  <input name="currentTitle" value={form.currentTitle} onChange={handleChange} className={inputClass} placeholder="Senior Engineer" />
-                </div>
+                        {resumeTab === "file" ? (
+                          resumeFile && resumeData ? (
+                            <div className="flex items-center gap-3 bg-white/5 border border-[#E55B1F]/40 rounded-lg px-4 py-3">
+                              <FileTextIcon className="h-5 w-5 text-[#E55B1F] shrink-0" />
+                              <span className="text-sm text-white flex-1 truncate">{resumeFile.name}</span>
+                              <button type="button" onClick={() => { setResumeFile(null); setResumeData(""); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-white/40 hover:text-white">
+                                <XIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                onChange={handleFileChange}
+                                className="block w-full text-sm text-white/60 cursor-pointer"
+                              />
+                              <p className="text-xs text-white/30">PDF or Word, max 5MB. If the button doesn&apos;t work, use &quot;Paste Text&quot; instead.</p>
+                            </div>
+                          )
+                        ) : (
+                          <textarea
+                            value={resumeText}
+                            onChange={(e) => setResumeText(e.target.value)}
+                            rows={6}
+                            className={`${iClass} resize-none`}
+                            placeholder="Paste your resume text here — experience, education, skills..."
+                          />
+                        )}
+                      </div>
 
-                <div>
-                  <label className="block text-xs text-white/50 mb-1">Location</label>
-                  <input name="location" value={form.location} onChange={handleChange} className={inputClass} placeholder="Riyadh, Saudi Arabia" />
-                </div>
+                      {formState === "error" && (
+                        <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">{errorMsg}</p>
+                      )}
 
-                <div>
-                  <label className="block text-xs text-white/50 mb-1">LinkedIn URL</label>
-                  <input name="linkedinUrl" type="url" value={form.linkedinUrl} onChange={handleChange} className={inputClass} placeholder="https://linkedin.com/in/janedoe" />
-                </div>
-
-                <div>
-                  <label className="block text-xs text-white/50 mb-1">Cover Letter</label>
-                  <textarea name="coverLetter" value={form.coverLetter} onChange={handleChange} rows={4}
-                    className={`${inputClass} resize-none`} placeholder="Tell us why you'd be a great fit..." />
-                </div>
-
-                {/* Resume — plain file input, no modal wrapping */}
-                <div>
-                  <label className="block text-xs text-white/50 mb-2">Resume / CV</label>
-                  {resumeFile && resumeData ? (
-                    <div className="flex items-center gap-3 bg-white/5 border border-[#E55B1F]/40 rounded-lg px-4 py-3">
-                      <FileTextIcon className="h-5 w-5 text-[#E55B1F] shrink-0" />
-                      <span className="text-sm text-white flex-1 truncate">{resumeFile.name}</span>
-                      <button type="button" onClick={() => { setResumeFile(null); setResumeData(""); }}
-                        className="text-white/40 hover:text-white transition-colors">
-                        <XIcon className="h-4 w-4" />
+                      <button type="submit" disabled={formState === "submitting" || formState === "reading"}
+                        className="w-full bg-[#E55B1F] hover:bg-[#d04e15] disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors">
+                        {formState === "submitting" ? "Submitting..." : formState === "reading" ? "Reading file..." : "Submit Application"}
                       </button>
-                    </div>
-                  ) : (
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleFileChange}
-                    />
-                  )}
-                  <p className="text-xs text-white/30 mt-1">PDF or Word, max 5MB</p>
-                </div>
-
-                {formState === "error" && (
-                  <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">{errorMsg}</p>
-                )}
-
-                <div className="flex gap-3 pt-2">
-                  <button type="submit" disabled={formState === "submitting" || formState === "reading"}
-                    className="bg-[#E55B1F] hover:bg-[#d04e15] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-8 py-3 rounded-xl transition-colors">
-                    {formState === "submitting" ? "Submitting..." : formState === "reading" ? "Reading file..." : "Submit Application"}
-                  </button>
-                  <button type="button" onClick={() => setShowForm(false)}
-                    className="text-white/40 hover:text-white px-6 py-3 rounded-xl transition-colors">
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </>
-          )}
+                    </form>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
