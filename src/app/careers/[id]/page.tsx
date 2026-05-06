@@ -322,6 +322,15 @@ export default function JobDetailPage() {
                   {/* Resume Upload */}
                   <div>
                     <label className="block text-xs text-white/50 mb-1">Resume / CV *</label>
+                    {/* Hidden file input — always rendered, triggered by button click */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+
                     {resumeFile && resumeData ? (
                       <div className="flex items-center gap-3 bg-white/5 border border-[#E55B1F]/40 rounded-lg px-4 py-3">
                         <FileTextIcon className="h-5 w-5 text-[#E55B1F] shrink-0" />
@@ -331,11 +340,16 @@ export default function JobDetailPage() {
                         </button>
                       </div>
                     ) : (
-                      <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg py-6 cursor-pointer transition-colors ${formState === "uploading" ? "border-[#E55B1F]/50 bg-[#E55B1F]/5" : "border-white/10 hover:border-white/30"}`}>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={formState === "uploading"}
+                        className={`w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg py-6 transition-colors ${formState === "uploading" ? "border-[#E55B1F]/50 bg-[#E55B1F]/5 cursor-wait" : "border-white/10 hover:border-white/40 hover:bg-white/5 cursor-pointer"}`}
+                      >
                         {formState === "uploading" ? (
                           <>
                             <div className="w-6 h-6 border-2 border-[#E55B1F] border-t-transparent rounded-full animate-spin" />
-                            <span className="text-sm text-white/50">Uploading...</span>
+                            <span className="text-sm text-white/50">Reading file...</span>
                           </>
                         ) : (
                           <>
@@ -344,15 +358,7 @@ export default function JobDetailPage() {
                             <span className="text-xs text-white/30">Max 5MB</span>
                           </>
                         )}
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                          className="hidden"
-                          onChange={handleFileChange}
-                          disabled={formState === "uploading"}
-                        />
-                      </label>
+                      </button>
                     )}
                   </div>
 
