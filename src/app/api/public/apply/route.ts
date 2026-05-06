@@ -13,7 +13,8 @@ const applySchema = z.object({
   currentTitle: z.string().optional(),
   linkedinUrl: z.string().url().optional().or(z.literal("")),
   coverLetter: z.string().optional(),
-  resumeUrl: z.string().url().optional(),
+  resumeData: z.string().optional(),
+  resumeFilename: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -29,6 +30,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Job not found or no longer accepting applications" }, { status: 404 });
   }
 
+  // Store resume as base64 data URL in resumeText field
+  const resumeText = data.resumeData && data.resumeFilename
+    ? `RESUME_FILE:${data.resumeFilename}:${data.resumeData}`
+    : undefined;
+
   const candidate = await prisma.candidate.upsert({
     where: { email: data.email },
     update: {
@@ -38,7 +44,7 @@ export async function POST(req: NextRequest) {
       location: data.location,
       currentTitle: data.currentTitle,
       linkedinUrl: data.linkedinUrl || undefined,
-      ...(data.resumeUrl && { resumeUrl: data.resumeUrl }),
+      ...(resumeText && { resumeText }),
     },
     create: {
       firstName: data.firstName,
@@ -48,7 +54,7 @@ export async function POST(req: NextRequest) {
       location: data.location,
       currentTitle: data.currentTitle,
       linkedinUrl: data.linkedinUrl || undefined,
-      resumeUrl: data.resumeUrl,
+      resumeText,
       source: "JOB_BOARD",
     },
   });

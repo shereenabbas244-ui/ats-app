@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { LinkIcon, UploadIcon, FileTextIcon, XIcon } from "lucide-react";
@@ -39,7 +39,7 @@ export default function JobDetailPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [copied, setCopied] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [resumeUrl, setResumeUrl] = useState<string>("");
+  const [resumeData, setResumeData] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
@@ -68,37 +68,41 @@ export default function JobDetailPage() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setResumeFile(file);
-    setResumeUrl("");
 
-    // Upload immediately
-    setFormState("uploading");
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/public/upload", { method: "POST", body: fd });
-      const data = await res.json() as { url?: string; error?: string };
-      if (!res.ok) {
-        setErrorMsg(data.error ?? "File upload failed. Please try again.");
-        setFormState("error");
-        setResumeFile(null);
-      } else {
-        setResumeUrl(data.url ?? "");
-        setFormState("idle");
-      }
-    } catch {
-      setErrorMsg("File upload failed. Please try again.");
+    const allowed = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowed.includes(file.type)) {
+      setErrorMsg("Only PDF and Word documents are accepted.");
       setFormState("error");
-      setResumeFile(null);
+      return;
     }
-  }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg("File must be under 5MB.");
+      setFormState("error");
+      return;
+    }
+
+    setFormState("uploading");
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1] ?? "";
+      setResumeFile(file);
+      setResumeData(base64);
+      setFormState("idle");
+      setErrorMsg("");
+    };
+    reader.onerror = () => {
+      setErrorMsg("Failed to read file. Please try again.");
+      setFormState("error");
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   function removeResume() {
     setResumeFile(null);
-    setResumeUrl("");
+    setResumeData("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -114,7 +118,7 @@ export default function JobDetailPage() {
         body: JSON.stringify({
           jobId: id,
           ...form,
-          ...(resumeUrl ? { resumeUrl } : {}),
+          ...(resumeData && resumeFile ? { resumeData, resumeFilename: resumeFile.name } : {}),
         }),
       });
       const data = await res.json() as { error?: string };
@@ -318,7 +322,7 @@ export default function JobDetailPage() {
                   {/* Resume Upload */}
                   <div>
                     <label className="block text-xs text-white/50 mb-1">Resume / CV *</label>
-                    {resumeFile && resumeUrl ? (
+                    {resumeFile && resumeData ? (
                       <div className="flex items-center gap-3 bg-white/5 border border-[#E55B1F]/40 rounded-lg px-4 py-3">
                         <FileTextIcon className="h-5 w-5 text-[#E55B1F] shrink-0" />
                         <span className="text-sm text-white flex-1 truncate">{resumeFile.name}</span>
