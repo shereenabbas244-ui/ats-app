@@ -91,12 +91,7 @@ export default function JobDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           jobId: id, ...form,
-          ...(resumeTab === "file" && resumeData && resumeFile
-            ? { resumeData, resumeFilename: resumeFile.name }
-            : {}),
-          ...(resumeTab === "text" && resumeText
-            ? { resumeData: btoa(unescape(encodeURIComponent(resumeText))), resumeFilename: "resume.txt" }
-            : {}),
+          ...(resumeData && resumeFile ? { resumeData, resumeFilename: resumeFile.name } : {}),
         }),
       });
       const data = await res.json() as { error?: string };
