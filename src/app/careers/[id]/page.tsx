@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LinkIcon, FileTextIcon, XIcon, PaperclipIcon } from "lucide-react";
+import { LinkIcon, FileTextIcon, XIcon } from "lucide-react";
 
 const JOB_TYPE_LABELS: Record<string, string> = {
   FULL_TIME: "Full Time", PART_TIME: "Part Time",
@@ -30,8 +30,6 @@ export default function JobDetailPage() {
   const [copied, setCopied] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeData, setResumeData] = useState("");
-  const [resumeText, setResumeText] = useState("");
-  const [resumeTab, setResumeTab] = useState<"file" | "text">("file");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
@@ -184,11 +182,11 @@ export default function JobDetailPage() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal — outer overlay scrolls, no overflow on inner container so file picker works */}
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) closeForm(); }}>
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-[#161616] border border-white/10 rounded-2xl w-full max-w-lg p-8 relative">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="flex min-h-full items-start justify-center p-6 py-12">
+            <div className="bg-[#161616] border border-white/10 rounded-2xl w-full max-w-lg p-8">
 
               {formState === "success" ? (
                 <div className="text-center py-8">
@@ -205,100 +203,74 @@ export default function JobDetailPage() {
                     <button onClick={closeForm} className="text-white/40 hover:text-white text-2xl leading-none transition-colors">✕</button>
                   </div>
 
-                  {/* Scrollable form content */}
-                  <div className="overflow-y-auto max-h-[70vh] pr-1">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs text-white/50 mb-1">First Name *</label>
-                          <input name="firstName" required value={form.firstName} onChange={handleChange} className={iClass} placeholder="Jane" />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-white/50 mb-1">Last Name *</label>
-                          <input name="lastName" required value={form.lastName} onChange={handleChange} className={iClass} placeholder="Doe" />
-                        </div>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-white/50 mb-1">First Name *</label>
+                        <input name="firstName" required value={form.firstName} onChange={handleChange} className={iClass} placeholder="Jane" />
                       </div>
                       <div>
-                        <label className="block text-xs text-white/50 mb-1">Email *</label>
-                        <input name="email" type="email" required value={form.email} onChange={handleChange} className={iClass} placeholder="jane@example.com" />
+                        <label className="block text-xs text-white/50 mb-1">Last Name *</label>
+                        <input name="lastName" required value={form.lastName} onChange={handleChange} className={iClass} placeholder="Doe" />
                       </div>
-                      <div>
-                        <label className="block text-xs text-white/50 mb-1">Phone</label>
-                        <input name="phone" type="tel" value={form.phone} onChange={handleChange} className={iClass} placeholder="+966 5x xxx xxxx" />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-white/50 mb-1">Current Title</label>
-                        <input name="currentTitle" value={form.currentTitle} onChange={handleChange} className={iClass} placeholder="Senior Engineer" />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-white/50 mb-1">Location</label>
-                        <input name="location" value={form.location} onChange={handleChange} className={iClass} placeholder="Riyadh, Saudi Arabia" />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-white/50 mb-1">LinkedIn URL</label>
-                        <input name="linkedinUrl" type="url" value={form.linkedinUrl} onChange={handleChange} className={iClass} placeholder="https://linkedin.com/in/..." />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-white/50 mb-1">Cover Letter</label>
-                        <textarea name="coverLetter" value={form.coverLetter} onChange={handleChange} rows={3} className={`${iClass} resize-none`} placeholder="Tell us why you'd be a great fit..." />
-                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/50 mb-1">Email *</label>
+                      <input name="email" type="email" required value={form.email} onChange={handleChange} className={iClass} placeholder="jane@example.com" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/50 mb-1">Phone</label>
+                      <input name="phone" type="tel" value={form.phone} onChange={handleChange} className={iClass} placeholder="+966 5x xxx xxxx" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/50 mb-1">Current Title</label>
+                      <input name="currentTitle" value={form.currentTitle} onChange={handleChange} className={iClass} placeholder="Senior Engineer" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/50 mb-1">Location</label>
+                      <input name="location" value={form.location} onChange={handleChange} className={iClass} placeholder="Riyadh, Saudi Arabia" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/50 mb-1">LinkedIn URL</label>
+                      <input name="linkedinUrl" type="url" value={form.linkedinUrl} onChange={handleChange} className={iClass} placeholder="https://linkedin.com/in/..." />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/50 mb-1">Cover Letter</label>
+                      <textarea name="coverLetter" value={form.coverLetter} onChange={handleChange} rows={3} className={`${iClass} resize-none`} placeholder="Tell us why you'd be a great fit..." />
+                    </div>
 
-                      {/* Resume — two options */}
-                      <div>
-                        <label className="block text-xs text-white/50 mb-2">Resume / CV</label>
-                        <div className="flex rounded-lg overflow-hidden border border-white/10 mb-3">
-                          <button type="button" onClick={() => setResumeTab("file")}
-                            className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${resumeTab === "file" ? "bg-[#E55B1F] text-white" : "bg-white/5 text-white/50 hover:text-white"}`}>
-                            <PaperclipIcon className="h-3.5 w-3.5" /> Attach File
-                          </button>
-                          <button type="button" onClick={() => setResumeTab("text")}
-                            className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${resumeTab === "text" ? "bg-[#E55B1F] text-white" : "bg-white/5 text-white/50 hover:text-white"}`}>
-                            <FileTextIcon className="h-3.5 w-3.5" /> Paste Text
+                    {/* Resume upload — input is NOT inside any overflow container */}
+                    <div>
+                      <label className="block text-xs text-white/50 mb-2">Resume / CV</label>
+                      {resumeFile && resumeData ? (
+                        <div className="flex items-center gap-3 bg-white/5 border border-[#E55B1F]/40 rounded-lg px-4 py-3">
+                          <FileTextIcon className="h-5 w-5 text-[#E55B1F] shrink-0" />
+                          <span className="text-sm text-white flex-1 truncate">{resumeFile.name}</span>
+                          <button type="button" onClick={() => { setResumeFile(null); setResumeData(""); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-white/40 hover:text-white">
+                            <XIcon className="h-4 w-4" />
                           </button>
                         </div>
-
-                        {resumeTab === "file" ? (
-                          resumeFile && resumeData ? (
-                            <div className="flex items-center gap-3 bg-white/5 border border-[#E55B1F]/40 rounded-lg px-4 py-3">
-                              <FileTextIcon className="h-5 w-5 text-[#E55B1F] shrink-0" />
-                              <span className="text-sm text-white flex-1 truncate">{resumeFile.name}</span>
-                              <button type="button" onClick={() => { setResumeFile(null); setResumeData(""); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-white/40 hover:text-white">
-                                <XIcon className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".pdf,.doc,.docx"
-                                onChange={handleFileChange}
-                                className="block w-full text-sm text-white/60 cursor-pointer"
-                              />
-                              <p className="text-xs text-white/30">PDF or Word, max 5MB. If the button doesn&apos;t work, use &quot;Paste Text&quot; instead.</p>
-                            </div>
-                          )
-                        ) : (
-                          <textarea
-                            value={resumeText}
-                            onChange={(e) => setResumeText(e.target.value)}
-                            rows={6}
-                            className={`${iClass} resize-none`}
-                            placeholder="Paste your resume text here — experience, education, skills..."
-                          />
-                        )}
-                      </div>
-
-                      {formState === "error" && (
-                        <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">{errorMsg}</p>
+                      ) : (
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleFileChange}
+                          className="block w-full text-sm text-white/60 cursor-pointer"
+                        />
                       )}
+                      <p className="text-xs text-white/30 mt-1">PDF or Word, max 5MB</p>
+                    </div>
 
-                      <button type="submit" disabled={formState === "submitting" || formState === "reading"}
-                        className="w-full bg-[#E55B1F] hover:bg-[#d04e15] disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors">
-                        {formState === "submitting" ? "Submitting..." : formState === "reading" ? "Reading file..." : "Submit Application"}
-                      </button>
-                    </form>
-                  </div>
+                    {formState === "error" && (
+                      <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">{errorMsg}</p>
+                    )}
+
+                    <button type="submit" disabled={formState === "submitting" || formState === "reading"}
+                      className="w-full bg-[#E55B1F] hover:bg-[#d04e15] disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors">
+                      {formState === "submitting" ? "Submitting..." : formState === "reading" ? "Reading file..." : "Submit Application"}
+                    </button>
+                  </form>
                 </>
               )}
             </div>
