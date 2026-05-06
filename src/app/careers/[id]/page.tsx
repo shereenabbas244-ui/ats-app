@@ -260,13 +260,6 @@ export default function JobDetailPage() {
                       type="file"
                       accept=".pdf,.doc,.docx"
                       onChange={handleFileChange}
-                      className="block w-full text-sm text-white/60
-                        file:mr-4 file:py-2 file:px-5
-                        file:rounded-lg file:border-0
-                        file:text-sm file:font-semibold
-                        file:bg-[#E55B1F] file:text-white
-                        hover:file:bg-[#d04e15] file:cursor-pointer
-                        cursor-pointer"
                     />
                   )}
                   <p className="text-xs text-white/30 mt-1">PDF or Word, max 5MB</p>
