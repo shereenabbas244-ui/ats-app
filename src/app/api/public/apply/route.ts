@@ -13,7 +13,7 @@ const applySchema = z.object({
   currentTitle: z.string().optional(),
   linkedinUrl: z.string().url().optional().or(z.literal("")),
   coverLetter: z.string().optional(),
-  resumeText: z.string().optional(),
+  resumeUrl: z.string().url().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       location: data.location,
       currentTitle: data.currentTitle,
       linkedinUrl: data.linkedinUrl || undefined,
-      ...(data.resumeText && { resumeText: data.resumeText }),
+      ...(data.resumeUrl && { resumeUrl: data.resumeUrl }),
     },
     create: {
       firstName: data.firstName,
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       location: data.location,
       currentTitle: data.currentTitle,
       linkedinUrl: data.linkedinUrl || undefined,
-      resumeText: data.resumeText,
+      resumeUrl: data.resumeUrl,
       source: "JOB_BOARD",
     },
   });
