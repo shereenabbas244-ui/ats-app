@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { LinkIcon, UploadIcon, FileTextIcon, XIcon } from "lucide-react";
@@ -40,7 +40,6 @@ export default function JobDetailPage() {
   const [copied, setCopied] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeData, setResumeData] = useState<string>("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -103,7 +102,6 @@ export default function JobDetailPage() {
   function removeResume() {
     setResumeFile(null);
     setResumeData("");
-    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -322,15 +320,6 @@ export default function JobDetailPage() {
                   {/* Resume Upload */}
                   <div>
                     <label className="block text-xs text-white/50 mb-1">Resume / CV *</label>
-                    {/* Hidden file input — always rendered, triggered by button click */}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      className="hidden"
-                      onChange={handleFileChange}
-                    />
-
                     {resumeFile && resumeData ? (
                       <div className="flex items-center gap-3 bg-white/5 border border-[#E55B1F]/40 rounded-lg px-4 py-3">
                         <FileTextIcon className="h-5 w-5 text-[#E55B1F] shrink-0" />
@@ -340,25 +329,29 @@ export default function JobDetailPage() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={formState === "uploading"}
-                        className={`w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg py-6 transition-colors ${formState === "uploading" ? "border-[#E55B1F]/50 bg-[#E55B1F]/5 cursor-wait" : "border-white/10 hover:border-white/40 hover:bg-white/5 cursor-pointer"}`}
-                      >
-                        {formState === "uploading" ? (
-                          <>
-                            <div className="w-6 h-6 border-2 border-[#E55B1F] border-t-transparent rounded-full animate-spin" />
-                            <span className="text-sm text-white/50">Reading file...</span>
-                          </>
-                        ) : (
-                          <>
-                            <UploadIcon className="h-6 w-6 text-white/30" />
-                            <span className="text-sm text-white/50">Click to upload PDF or Word doc</span>
-                            <span className="text-xs text-white/30">Max 5MB</span>
-                          </>
-                        )}
-                      </button>
+                      <div className="relative w-full">
+                        {/* Transparent native input sits on top — guarantees the file picker opens on click */}
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg py-6 transition-colors pointer-events-none ${formState === "uploading" ? "border-[#E55B1F]/50 bg-[#E55B1F]/5" : "border-white/10"}`}>
+                          {formState === "uploading" ? (
+                            <>
+                              <div className="w-6 h-6 border-2 border-[#E55B1F] border-t-transparent rounded-full animate-spin" />
+                              <span className="text-sm text-white/50">Reading file...</span>
+                            </>
+                          ) : (
+                            <>
+                              <UploadIcon className="h-6 w-6 text-white/30" />
+                              <span className="text-sm text-white/50">Click to upload PDF or Word doc</span>
+                              <span className="text-xs text-white/30">Max 5MB</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
 
