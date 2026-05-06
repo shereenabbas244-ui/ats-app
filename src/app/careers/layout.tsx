@@ -33,7 +33,11 @@ export default function CareersLayout({ children }: { children: React.ReactNode 
       <footer className="border-t border-white/10 mt-24 py-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-white/40 text-sm">
           <span>© {new Date().getFullYear()} Lobah Games. All rights reserved.</span>
-          <span>From Saudi Arabia to the world 🌍</span>
+          <div className="flex items-center gap-4">
+            <Link href="/careers/status" className="hover:text-white/60 transition-colors">Check Application Status</Link>
+            <span>•</span>
+            <span>From Saudi Arabia to the world 🌍</span>
+          </div>
         </div>
       </footer>
     </div>

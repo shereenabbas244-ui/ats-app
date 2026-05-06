@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { sendApplicationConfirmation, sendNewApplicationAlert } from "@/lib/email";
 
 const applySchema = z.object({
   jobId: z.string().min(1),
@@ -12,6 +13,7 @@ const applySchema = z.object({
   currentTitle: z.string().optional(),
   linkedinUrl: z.string().url().optional().or(z.literal("")),
   coverLetter: z.string().optional(),
+  resumeText: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -27,7 +29,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Job not found or no longer accepting applications" }, { status: 404 });
   }
 
-  // Upsert candidate by email
   const candidate = await prisma.candidate.upsert({
     where: { email: data.email },
     update: {
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
       location: data.location,
       currentTitle: data.currentTitle,
       linkedinUrl: data.linkedinUrl || undefined,
+      ...(data.resumeText && { resumeText: data.resumeText }),
     },
     create: {
       firstName: data.firstName,
@@ -46,11 +48,11 @@ export async function POST(req: NextRequest) {
       location: data.location,
       currentTitle: data.currentTitle,
       linkedinUrl: data.linkedinUrl || undefined,
+      resumeText: data.resumeText,
       source: "JOB_BOARD",
     },
   });
 
-  // Check if already applied
   const existing = await prisma.application.findUnique({
     where: { candidateId_jobId: { candidateId: candidate.id, jobId: data.jobId } },
   });
@@ -67,13 +69,15 @@ export async function POST(req: NextRequest) {
       source: "JOB_BOARD",
       coverLetter: data.coverLetter,
       activities: {
-        create: {
-          type: "APPLIED",
-          description: "Applied via career page",
-        },
+        create: { type: "APPLIED", description: "Applied via career page" },
       },
     },
   });
+
+  // Send emails (non-blocking)
+  const candidateName = `${data.firstName} ${data.lastName}`;
+  void sendApplicationConfirmation({ candidateName, candidateEmail: data.email, jobTitle: job.title });
+  void sendNewApplicationAlert({ candidateName, candidateEmail: data.email, jobTitle: job.title, applicationId: application.id });
 
   return NextResponse.json({ success: true, applicationId: application.id }, { status: 201 });
 }
