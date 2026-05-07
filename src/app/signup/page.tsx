@@ -22,18 +22,23 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json() as { error?: string };
-    if (!res.ok) {
-      setError(data.error ?? "Something went wrong.");
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json() as { error?: string };
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong.");
+        setLoading(false);
+        return;
+      }
+      router.push("/login?registered=1");
+    } catch {
+      setError("Network error. Please try again.");
       setLoading(false);
-      return;
     }
-    router.push("/login?registered=1");
   }
 
   return (
