@@ -166,6 +166,7 @@ export function TeamSection({
         {inviteCode && (
           <p className="text-xs text-gray-400 mt-1">Invite code: <span className="font-mono font-semibold text-gray-600">{inviteCode}</span></p>
         )}
+        <p className="text-xs text-amber-600 mt-1">⚠ Invite emails require your domain to be verified in Resend. Until then, share the link + code manually.</p>
 
         {inviteMsg && (
           <p className={`text-xs mt-2 ${inviteMsg.ok ? "text-green-600" : "text-amber-600"}`}>{inviteMsg.text}</p>

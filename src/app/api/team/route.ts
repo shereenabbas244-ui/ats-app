@@ -41,6 +41,11 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "You cannot remove yourself." }, { status: 400 });
   }
 
-  await prisma.user.delete({ where: { id: userId } });
+  // Clear foreign key references before deleting to avoid constraint errors
+  await prisma.$transaction([
+    prisma.job.updateMany({ where: { createdById: userId }, data: { createdById: session.user.id! } }),
+    prisma.candidateNote.deleteMany({ where: { authorId: userId } }),
+    prisma.user.delete({ where: { id: userId } }),
+  ]);
   return NextResponse.json({ success: true });
 }
