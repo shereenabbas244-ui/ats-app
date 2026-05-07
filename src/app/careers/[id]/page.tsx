@@ -34,7 +34,7 @@ export default function JobDetailPage() {
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "",
-    location: "", currentTitle: "", linkedinUrl: "", coverLetter: "",
+    location: "", currentTitle: "", linkedinUrl: "",
   });
 
   useEffect(() => {
@@ -90,7 +90,8 @@ export default function JobDetailPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          jobId: id, ...form,
+          jobId: id,
+          ...form,
           ...(resumeData && resumeFile ? { resumeData, resumeFilename: resumeFile.name } : {}),
         }),
       });
@@ -214,24 +215,20 @@ export default function JobDetailPage() {
                       <input name="email" type="email" required value={form.email} onChange={handleChange} className={iClass} placeholder="jane@example.com" />
                     </div>
                     <div>
-                      <label className="block text-xs text-white/50 mb-1">Phone</label>
-                      <input name="phone" type="tel" value={form.phone} onChange={handleChange} className={iClass} placeholder="+966 5x xxx xxxx" />
+                      <label className="block text-xs text-white/50 mb-1">Phone *</label>
+                      <input name="phone" type="tel" required value={form.phone} onChange={handleChange} className={iClass} placeholder="+966 5x xxx xxxx" />
                     </div>
                     <div>
-                      <label className="block text-xs text-white/50 mb-1">Current Title</label>
-                      <input name="currentTitle" value={form.currentTitle} onChange={handleChange} className={iClass} placeholder="Senior Engineer" />
+                      <label className="block text-xs text-white/50 mb-1">Current Title *</label>
+                      <input name="currentTitle" required value={form.currentTitle} onChange={handleChange} className={iClass} placeholder="Senior Engineer" />
                     </div>
                     <div>
-                      <label className="block text-xs text-white/50 mb-1">Location</label>
-                      <input name="location" value={form.location} onChange={handleChange} className={iClass} placeholder="Riyadh, Saudi Arabia" />
+                      <label className="block text-xs text-white/50 mb-1">Location *</label>
+                      <input name="location" required value={form.location} onChange={handleChange} className={iClass} placeholder="Riyadh, Saudi Arabia" />
                     </div>
                     <div>
-                      <label className="block text-xs text-white/50 mb-1">LinkedIn URL</label>
-                      <input name="linkedinUrl" type="url" value={form.linkedinUrl} onChange={handleChange} className={iClass} placeholder="https://linkedin.com/in/..." />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-white/50 mb-1">Cover Letter</label>
-                      <textarea name="coverLetter" value={form.coverLetter} onChange={handleChange} rows={3} className={`${iClass} resize-none`} placeholder="Tell us why you'd be a great fit..." />
+                      <label className="block text-xs text-white/50 mb-1">LinkedIn URL *</label>
+                      <input name="linkedinUrl" type="url" required value={form.linkedinUrl} onChange={handleChange} className={iClass} placeholder="https://linkedin.com/in/..." />
                     </div>
 
                     {/* Resume upload — label+htmlFor is the only approach browsers never block */}

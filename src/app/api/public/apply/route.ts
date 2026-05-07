@@ -8,11 +8,10 @@ const applySchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.string().email(),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-  currentTitle: z.string().optional(),
-  linkedinUrl: z.string().url().optional().or(z.literal("")),
-  coverLetter: z.string().optional(),
+  phone: z.string().min(1),
+  location: z.string().min(1),
+  currentTitle: z.string().min(1),
+  linkedinUrl: z.string().url(),
   resumeData: z.string().optional(),
   resumeFilename: z.string().optional(),
   resumeText: z.string().optional(),
@@ -20,7 +19,13 @@ const applySchema = z.object({
 
 export async function POST(req: NextRequest) {
   const body = await req.json() as unknown;
-  const data = applySchema.parse(body);
+
+  let data: z.infer<typeof applySchema>;
+  try {
+    data = applySchema.parse(body);
+  } catch (err) {
+    return NextResponse.json({ error: "Please fill in all required fields correctly." }, { status: 400 });
+  }
 
   const job = await prisma.job.findUnique({
     where: { id: data.jobId, status: "OPEN" },
@@ -31,7 +36,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Job not found or no longer accepting applications" }, { status: 404 });
   }
 
-  // Store resume as base64 data URL in resumeText field
   const resumeText = data.resumeData && data.resumeFilename
     ? `RESUME_FILE:${data.resumeFilename}:${data.resumeData}`
     : data.resumeText
@@ -46,7 +50,7 @@ export async function POST(req: NextRequest) {
       phone: data.phone,
       location: data.location,
       currentTitle: data.currentTitle,
-      linkedinUrl: data.linkedinUrl || undefined,
+      linkedinUrl: data.linkedinUrl,
       ...(resumeText && { resumeText }),
     },
     create: {
@@ -56,7 +60,7 @@ export async function POST(req: NextRequest) {
       phone: data.phone,
       location: data.location,
       currentTitle: data.currentTitle,
-      linkedinUrl: data.linkedinUrl || undefined,
+      linkedinUrl: data.linkedinUrl,
       resumeText,
       source: "JOB_BOARD",
     },
@@ -76,17 +80,19 @@ export async function POST(req: NextRequest) {
       jobId: data.jobId,
       stageId: job.stages[0]?.id,
       source: "JOB_BOARD",
-      coverLetter: data.coverLetter,
       activities: {
         create: { type: "APPLIED", description: "Applied via career page" },
       },
     },
   });
 
-  // Send emails (non-blocking)
   const candidateName = `${data.firstName} ${data.lastName}`;
-  void sendApplicationConfirmation({ candidateName, candidateEmail: data.email, jobTitle: job.title });
-  void sendNewApplicationAlert({ candidateName, candidateEmail: data.email, jobTitle: job.title, applicationId: application.id });
+
+  // Send emails — await both so errors surface in Vercel logs
+  await Promise.allSettled([
+    sendApplicationConfirmation({ candidateName, candidateEmail: data.email, jobTitle: job.title }),
+    sendNewApplicationAlert({ candidateName, candidateEmail: data.email, jobTitle: job.title, applicationId: application.id }),
+  ]);
 
   return NextResponse.json({ success: true, applicationId: application.id }, { status: 201 });
 }

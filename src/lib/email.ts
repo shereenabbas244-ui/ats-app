@@ -1,11 +1,17 @@
 import { Resend } from "resend";
 
-const FROM = "Lobah Careers <careers@lobah.com>";
-
 function getResend() {
-  if (!process.env.RESEND_API_KEY) return null;
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[email] RESEND_API_KEY is not set — emails will not be sent");
+    return null;
+  }
   return new Resend(process.env.RESEND_API_KEY);
 }
+
+// Set EMAIL_FROM in Vercel env vars if your domain is verified in Resend.
+// Otherwise Resend only allows sending from onboarding@resend.dev (to your own email).
+const FROM = process.env.EMAIL_FROM ?? "Lobah Careers <onboarding@resend.dev>";
+const HR_EMAIL = process.env.HR_EMAIL ?? "hr@lobah.com";
 
 export async function sendApplicationConfirmation({
   candidateName,
@@ -18,25 +24,29 @@ export async function sendApplicationConfirmation({
 }) {
   const resend = getResend();
   if (!resend) return;
-  await resend.emails.send({
-    from: FROM,
-    to: candidateEmail,
-    subject: `Application received — ${jobTitle}`,
-    html: `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0d0d0d;color:#fff;padding:40px;border-radius:12px;">
-        <img src="https://ats-app-git-master-shereenabbas244-4279s-projects.vercel.app/Lobah%20new%20logo.png" alt="Lobah Games" height="40" style="margin-bottom:32px;" />
-        <h1 style="font-size:24px;font-weight:900;margin:0 0 8px;">Application Received!</h1>
-        <p style="color:#E55B1F;font-size:14px;margin:0 0 24px;">We are Lobah Games</p>
-        <p style="color:#ccc;line-height:1.6;">Hi <strong style="color:#fff;">${candidateName}</strong>,</p>
-        <p style="color:#ccc;line-height:1.6;">Thank you for applying for the <strong style="color:#fff;">${jobTitle}</strong> position at Lobah Games. We have received your application and will review it shortly.</p>
-        <p style="color:#ccc;line-height:1.6;">We will be in touch if your profile matches our requirements.</p>
-        <div style="margin:32px 0;padding:20px;background:#1a1a1a;border-radius:8px;border-left:4px solid #E55B1F;">
-          <p style="margin:0;color:#ccc;font-size:14px;">You applied for: <strong style="color:#fff;">${jobTitle}</strong></p>
+  try {
+    const result = await resend.emails.send({
+      from: FROM,
+      to: candidateEmail,
+      subject: `Application received — ${jobTitle}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0d0d0d;color:#fff;padding:40px;border-radius:12px;">
+          <h1 style="font-size:24px;font-weight:900;margin:0 0 8px;color:#fff;">Application Received!</h1>
+          <p style="color:#E55B1F;font-size:14px;margin:0 0 24px;">Lobah Games</p>
+          <p style="color:#ccc;line-height:1.6;">Hi <strong style="color:#fff;">${candidateName}</strong>,</p>
+          <p style="color:#ccc;line-height:1.6;">Thank you for applying for the <strong style="color:#fff;">${jobTitle}</strong> position at Lobah Games. We have received your application and will review it shortly.</p>
+          <p style="color:#ccc;line-height:1.6;">We will be in touch if your profile matches our requirements.</p>
+          <div style="margin:32px 0;padding:20px;background:#1a1a1a;border-radius:8px;border-left:4px solid #E55B1F;">
+            <p style="margin:0;color:#ccc;font-size:14px;">You applied for: <strong style="color:#fff;">${jobTitle}</strong></p>
+          </div>
+          <p style="color:#555;font-size:12px;margin-top:32px;">© ${new Date().getFullYear()} Lobah Games. From Saudi Arabia to the world 🌍</p>
         </div>
-        <p style="color:#555;font-size:12px;margin-top:32px;">© ${new Date().getFullYear()} Lobah Games. From Saudi Arabia to the world 🌍</p>
-      </div>
-    `,
-  });
+      `,
+    });
+    console.log("[email] Confirmation sent to", candidateEmail, result);
+  } catch (err) {
+    console.error("[email] Failed to send confirmation:", err);
+  }
 }
 
 export async function sendNewApplicationAlert({
@@ -52,22 +62,27 @@ export async function sendNewApplicationAlert({
 }) {
   const resend = getResend();
   if (!resend) return;
-  const hrEmail = process.env.HR_EMAIL ?? "hr@lobah.com";
-  await resend.emails.send({
-    from: FROM,
-    to: hrEmail,
-    subject: `New application — ${jobTitle}`,
-    html: `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:40px;">
-        <h2 style="color:#E55B1F;">New Application Received</h2>
-        <p><strong>${candidateName}</strong> (${candidateEmail}) has applied for <strong>${jobTitle}</strong>.</p>
-        <a href="https://ats-app-git-master-shereenabbas244-4279s-projects.vercel.app/dashboard"
-           style="display:inline-block;background:#E55B1F;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:16px;">
-          View in Dashboard
-        </a>
-      </div>
-    `,
-  });
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ats-app-git-master-shereenabbas244-4279s-projects.vercel.app";
+  try {
+    const result = await resend.emails.send({
+      from: FROM,
+      to: HR_EMAIL,
+      subject: `New application — ${jobTitle}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:40px;">
+          <h2 style="color:#E55B1F;">New Application Received</h2>
+          <p><strong>${candidateName}</strong> (${candidateEmail}) has applied for <strong>${jobTitle}</strong>.</p>
+          <a href="${appUrl}/candidates"
+             style="display:inline-block;background:#E55B1F;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:16px;">
+            View in Dashboard
+          </a>
+        </div>
+      `,
+    });
+    console.log("[email] HR alert sent to", HR_EMAIL, result);
+  } catch (err) {
+    console.error("[email] Failed to send HR alert:", err);
+  }
 }
 
 export async function sendStatusUpdate({
@@ -102,19 +117,23 @@ export async function sendStatusUpdate({
   const msg = statusMessages[status];
   if (!msg) return;
 
-  await resend.emails.send({
-    from: FROM,
-    to: candidateEmail,
-    subject: msg.subject,
-    html: `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0d0d0d;color:#fff;padding:40px;border-radius:12px;">
-        <img src="https://ats-app-git-master-shereenabbas244-4279s-projects.vercel.app/Lobah%20new%20logo.png" alt="Lobah Games" height="40" style="margin-bottom:32px;" />
-        <h1 style="font-size:22px;font-weight:900;margin:0 0 24px;">${msg.subject}</h1>
-        <p style="color:#ccc;line-height:1.6;">Hi <strong style="color:#fff;">${candidateName}</strong>,</p>
-        <p style="color:#ccc;line-height:1.6;">${msg.message}</p>
-        <p style="color:#ccc;line-height:1.6;">Position: <strong style="color:#fff;">${jobTitle}</strong></p>
-        <p style="color:#555;font-size:12px;margin-top:32px;">© ${new Date().getFullYear()} Lobah Games. From Saudi Arabia to the world 🌍</p>
-      </div>
-    `,
-  });
+  try {
+    const result = await resend.emails.send({
+      from: FROM,
+      to: candidateEmail,
+      subject: msg.subject,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0d0d0d;color:#fff;padding:40px;border-radius:12px;">
+          <h1 style="font-size:22px;font-weight:900;margin:0 0 24px;color:#fff;">${msg.subject}</h1>
+          <p style="color:#ccc;line-height:1.6;">Hi <strong style="color:#fff;">${candidateName}</strong>,</p>
+          <p style="color:#ccc;line-height:1.6;">${msg.message}</p>
+          <p style="color:#ccc;line-height:1.6;">Position: <strong style="color:#fff;">${jobTitle}</strong></p>
+          <p style="color:#555;font-size:12px;margin-top:32px;">© ${new Date().getFullYear()} Lobah Games. From Saudi Arabia to the world 🌍</p>
+        </div>
+      `,
+    });
+    console.log("[email] Status update sent to", candidateEmail, "status:", status, result);
+  } catch (err) {
+    console.error("[email] Failed to send status update:", err);
+  }
 }
