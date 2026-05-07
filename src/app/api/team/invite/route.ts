@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { sendTeamInvite } from "@/lib/email";
+
+function getAppUrl() {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "https://your-app.vercel.app";
+}
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -10,26 +17,39 @@ export async function POST(req: NextRequest) {
   if (!email) return NextResponse.json({ error: "Email is required" }, { status: 400 });
 
   const inviteCode = process.env.SIGNUP_INVITE_CODE;
-  if (!inviteCode) return NextResponse.json({ error: "SIGNUP_INVITE_CODE is not set in environment variables." }, { status: 500 });
+  if (!inviteCode) return NextResponse.json({ error: "SIGNUP_INVITE_CODE is not configured." }, { status: 500 });
 
-  if (!process.env.RESEND_API_KEY) {
-    return NextResponse.json({ error: "Email is not configured (RESEND_API_KEY missing). Share the signup link manually." }, { status: 500 });
-  }
+  // Save/update invitation record
+  await prisma.invitation.upsert({
+    where: { email },
+    update: { invitedBy: session.user.name ?? session.user.email ?? "Admin", createdAt: new Date() },
+    create: { email, invitedBy: session.user.name ?? session.user.email ?? "Admin" },
+  });
 
-  // Fix operator precedence — evaluate VERCEL_URL separately
-  const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? vercelUrl ?? "https://your-app.vercel.app";
+  // Try to send email (may fail if domain not verified)
+  const emailSent = await (async () => {
+    if (!process.env.RESEND_API_KEY) return false;
+    try {
+      await sendTeamInvite({
+        toEmail: email,
+        inviterName: session.user.name ?? "Your team",
+        inviteCode,
+        signupUrl: `${getAppUrl()}/signup`,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  })();
 
-  try {
-    await sendTeamInvite({
-      toEmail: email,
-      inviterName: session.user.name ?? "Your team",
-      inviteCode,
-      signupUrl: `${appUrl}/signup`,
-    });
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error("[invite]", err);
-    return NextResponse.json({ error: `Failed to send email: ${String(err)}` }, { status: 500 });
-  }
+  return NextResponse.json({ success: true, emailSent });
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { email } = await req.json() as { email: string };
+  await prisma.invitation.delete({ where: { email } }).catch(() => null);
+  return NextResponse.json({ success: true });
 }

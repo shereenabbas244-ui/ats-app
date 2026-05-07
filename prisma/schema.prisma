@@ -64,6 +64,13 @@ enum UserRole {
   HIRING_MANAGER
 }
 
+model Invitation {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  invitedBy   String
+  createdAt   DateTime @default(now())
+}
+
 // ─── Jobs ───────────────────────────────────────────────────────────────────
 
 model Job {

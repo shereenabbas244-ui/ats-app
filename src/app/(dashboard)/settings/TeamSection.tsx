@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2Icon, MailIcon, UserPlusIcon } from "lucide-react";
+import { Trash2Icon, MailIcon, UserPlusIcon, RefreshCwIcon, ClockIcon, CopyIcon, CheckIcon } from "lucide-react";
 
 interface TeamMember {
   id: string;
@@ -11,11 +11,12 @@ interface TeamMember {
   createdAt: string;
 }
 
-const roleLabel: Record<string, string> = {
-  ADMIN: "Admin",
-  RECRUITER: "Recruiter",
-  HIRING_MANAGER: "Hiring Manager",
-};
+interface Invitation {
+  id: string;
+  email: string;
+  invitedBy: string;
+  createdAt: string;
+}
 
 const roleColors: Record<string, string> = {
   ADMIN: "bg-orange-100 text-orange-700",
@@ -25,17 +26,25 @@ const roleColors: Record<string, string> = {
 
 export function TeamSection({
   members: initial,
+  invitations: initialInvites,
   currentUserId,
+  inviteCode,
 }: {
   members: TeamMember[];
+  invitations: Invitation[];
   currentUserId: string;
+  inviteCode: string;
 }) {
   const [members, setMembers] = useState(initial);
+  const [invitations, setInvitations] = useState(initialInvites);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [resendingEmail, setResendingEmail] = useState<string | null>(null);
+  const [cancellingEmail, setCancellingEmail] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
@@ -46,14 +55,48 @@ export function TeamSection({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: inviteEmail }),
     });
-    const data = await res.json() as { error?: string };
+    const data = await res.json() as { error?: string; emailSent?: boolean };
     if (res.ok) {
-      setInviteMsg({ ok: true, text: `Invite sent to ${inviteEmail}` });
+      const msg = data.emailSent
+        ? `Invite sent to ${inviteEmail}`
+        : `Invitation saved for ${inviteEmail} — email not sent (verify your domain in Resend to send emails to any address)`;
+      setInviteMsg({ ok: data.emailSent ?? false, text: msg });
+      setInvitations((prev) => {
+        const filtered = prev.filter((i) => i.email !== inviteEmail);
+        return [{ id: Date.now().toString(), email: inviteEmail, invitedBy: "You", createdAt: new Date().toISOString() }, ...filtered];
+      });
       setInviteEmail("");
     } else {
       setInviteMsg({ ok: false, text: data.error ?? "Failed to send invite." });
     }
     setInviting(false);
+  }
+
+  async function handleResend(email: string) {
+    setResendingEmail(email);
+    const res = await fetch("/api/team/invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json() as { emailSent?: boolean; error?: string };
+    if (res.ok && data.emailSent) {
+      setInviteMsg({ ok: true, text: `Invite resent to ${email}` });
+    } else {
+      setInviteMsg({ ok: false, text: data.error ?? "Could not resend — verify your domain in Resend first." });
+    }
+    setResendingEmail(null);
+  }
+
+  async function handleCancelInvite(email: string) {
+    setCancellingEmail(email);
+    await fetch("/api/team/invite", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    setInvitations((prev) => prev.filter((i) => i.email !== email));
+    setCancellingEmail(null);
   }
 
   async function handleRoleChange(userId: string, newRole: string) {
@@ -62,9 +105,7 @@ export function TeamSection({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, role: newRole }),
     });
-    if (res.ok) {
-      setMembers((prev) => prev.map((m) => m.id === userId ? { ...m, role: newRole } : m));
-    }
+    if (res.ok) setMembers((prev) => prev.map((m) => m.id === userId ? { ...m, role: newRole } : m));
   }
 
   async function handleRemove(userId: string) {
@@ -77,6 +118,13 @@ export function TeamSection({
     if (res.ok) setMembers((prev) => prev.filter((m) => m.id !== userId));
     setRemovingId(null);
     setConfirmId(null);
+  }
+
+  function copySignupLink() {
+    const url = `${window.location.origin}/signup`;
+    void navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -105,18 +153,65 @@ export function TeamSection({
             {inviting ? "Sending…" : "Send Invite"}
           </button>
         </form>
+
+        {/* Copy signup link */}
+        <div className="flex items-center gap-2 mt-2">
+          <span className="text-xs text-gray-400">Or share signup link:</span>
+          <button onClick={copySignupLink} className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800">
+            {copied ? <CheckIcon className="h-3 w-3" /> : <CopyIcon className="h-3 w-3" />}
+            {copied ? "Copied!" : "Copy link"}
+          </button>
+        </div>
+
+        {inviteCode && (
+          <p className="text-xs text-gray-400 mt-1">Invite code: <span className="font-mono font-semibold text-gray-600">{inviteCode}</span></p>
+        )}
+
         {inviteMsg && (
-          <p className={`text-xs mt-2 ${inviteMsg.ok ? "text-green-600" : "text-red-500"}`}>
-            {inviteMsg.text}
-          </p>
+          <p className={`text-xs mt-2 ${inviteMsg.ok ? "text-green-600" : "text-amber-600"}`}>{inviteMsg.text}</p>
         )}
       </div>
 
+      {/* Pending invitations */}
+      {invitations.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+            <ClockIcon className="h-3.5 w-3.5 text-gray-400" />
+            Pending Invitations ({invitations.length})
+          </h3>
+          <div className="space-y-1.5">
+            {invitations.map((inv) => (
+              <div key={inv.id} className="flex items-center justify-between py-2 px-3 bg-amber-50 border border-amber-100 rounded-lg">
+                <div>
+                  <p className="text-sm text-gray-800">{inv.email}</p>
+                  <p className="text-xs text-gray-400">Invited by {inv.invitedBy}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleResend(inv.email)}
+                    disabled={resendingEmail === inv.email}
+                    className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+                  >
+                    <RefreshCwIcon className="h-3 w-3" />
+                    {resendingEmail === inv.email ? "…" : "Resend"}
+                  </button>
+                  <button
+                    onClick={() => handleCancelInvite(inv.email)}
+                    disabled={cancellingEmail === inv.email}
+                    className="text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50"
+                  >
+                    <Trash2Icon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Member list */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">
-          Team Members ({members.length})
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Team Members ({members.length})</h3>
         <div className="space-y-2">
           {members.map((m) => (
             <div key={m.id} className="flex items-center justify-between py-2.5 px-3 bg-gray-50 rounded-lg">
@@ -125,17 +220,18 @@ export function TeamSection({
                   {(m.name ?? m.email ?? "?")[0].toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{m.name ?? "—"}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {m.name ?? "—"}
+                    {m.id === currentUserId && <span className="text-xs text-gray-400 ml-1">(you)</span>}
+                  </p>
                   <p className="text-xs text-gray-500">{m.email}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {/* Role selector */}
                 <select
                   value={m.role}
                   onChange={(e) => handleRoleChange(m.id, e.target.value)}
-                  disabled={m.id === currentUserId}
-                  className={`text-xs px-2 py-0.5 rounded-full font-medium border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#E55B1F] disabled:cursor-default ${roleColors[m.role] ?? "bg-gray-100 text-gray-600"}`}
+                  className={`text-xs px-2 py-0.5 rounded-full font-medium border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#E55B1F] ${roleColors[m.role] ?? "bg-gray-100 text-gray-600"}`}
                 >
                   <option value="ADMIN">Admin</option>
                   <option value="RECRUITER">Recruiter</option>
@@ -145,16 +241,11 @@ export function TeamSection({
                 {m.id !== currentUserId && (
                   confirmId === m.id ? (
                     <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => handleRemove(m.id)}
-                        disabled={removingId === m.id}
-                        className="text-xs bg-red-600 text-white px-2 py-1 rounded font-medium disabled:opacity-50"
-                      >
+                      <button onClick={() => handleRemove(m.id)} disabled={removingId === m.id}
+                        className="text-xs bg-red-600 text-white px-2 py-1 rounded font-medium disabled:opacity-50">
                         {removingId === m.id ? "…" : "Remove"}
                       </button>
-                      <button onClick={() => setConfirmId(null)} className="text-xs text-gray-500 hover:text-gray-700">
-                        Cancel
-                      </button>
+                      <button onClick={() => setConfirmId(null)} className="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
                     </div>
                   ) : (
                     <button onClick={() => setConfirmId(m.id)} className="text-gray-300 hover:text-red-500 transition-colors">

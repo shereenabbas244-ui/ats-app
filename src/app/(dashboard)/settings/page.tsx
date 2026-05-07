@@ -10,14 +10,26 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const session = await auth();
 
-  const members = await prisma.user.findMany({
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
-    orderBy: { createdAt: "asc" },
-  });
+  const [members, invitations] = await Promise.all([
+    prisma.user.findMany({
+      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.invitation.findMany({ orderBy: { createdAt: "desc" } }),
+  ]);
+
+  // Filter out invitations for emails that already have accounts
+  const memberEmails = new Set(members.map((m) => m.email));
+  const pendingInvitations = invitations.filter((i) => !memberEmails.has(i.email));
 
   const serialized = members.map((m) => ({
     ...m,
     createdAt: m.createdAt.toISOString(),
+  }));
+
+  const serializedInvites = pendingInvitations.map((i) => ({
+    ...i,
+    createdAt: i.createdAt.toISOString(),
   }));
 
   return (
@@ -65,7 +77,9 @@ export default async function SettingsPage() {
           <CardContent>
             <TeamSection
               members={serialized}
+              invitations={serializedInvites}
               currentUserId={session?.user?.id ?? ""}
+              inviteCode={process.env.SIGNUP_INVITE_CODE ?? ""}
             />
           </CardContent>
         </Card>
