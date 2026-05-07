@@ -19,7 +19,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = credentials.password as string;
 
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !user.password) return null;
+        if (!user) return null;
+
+        // First-time login for accounts created before password auth:
+        // set their password automatically so they can log in going forward
+        if (!user.password) {
+          const hashed = await bcrypt.hash(password, 10);
+          await prisma.user.update({ where: { email }, data: { password: hashed } });
+          return { id: user.id, email: user.email ?? email, name: user.name ?? "" };
+        }
 
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) return null;
