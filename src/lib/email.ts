@@ -137,3 +137,44 @@ export async function sendStatusUpdate({
     console.error("[email] Failed to send status update:", err);
   }
 }
+
+export async function sendTeamInvite({
+  toEmail,
+  inviterName,
+  inviteCode,
+  signupUrl,
+}: {
+  toEmail: string;
+  inviterName: string;
+  inviteCode: string;
+  signupUrl: string;
+}) {
+  const resend = getResend();
+  if (!resend) return;
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: toEmail,
+      subject: `You've been invited to Lobah ATS`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0d0d0d;color:#fff;padding:40px;border-radius:12px;">
+          <h1 style="font-size:22px;font-weight:900;margin:0 0 8px;color:#fff;">You're invited to Lobah ATS</h1>
+          <p style="color:#E55B1F;font-size:14px;margin:0 0 24px;">Lobah Games</p>
+          <p style="color:#ccc;line-height:1.6;"><strong style="color:#fff;">${inviterName}</strong> has invited you to join the Lobah Games hiring platform.</p>
+          <div style="margin:24px 0;padding:20px;background:#1a1a1a;border-radius:8px;border-left:4px solid #E55B1F;">
+            <p style="margin:0 0 8px;color:#ccc;font-size:14px;">Your invite code:</p>
+            <p style="margin:0;color:#fff;font-size:20px;font-weight:bold;letter-spacing:2px;">${inviteCode}</p>
+          </div>
+          <a href="${signupUrl}" style="display:inline-block;background:#E55B1F;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+            Create Your Account
+          </a>
+          <p style="color:#555;font-size:12px;margin-top:32px;">© ${new Date().getFullYear()} Lobah Games. From Saudi Arabia to the world 🌍</p>
+        </div>
+      `,
+    });
+    console.log("[email] Team invite sent to", toEmail);
+  } catch (err) {
+    console.error("[email] Failed to send team invite:", err);
+    throw err;
+  }
+}
