@@ -1,16 +1,20 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import bcrypt from "bcryptjs";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Create admin user
+  // Create admin user with password from env or default
+  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@lobah.com";
+  const adminPassword = process.env.ADMIN_PASSWORD ?? "changeme123";
+  const hashed = await bcrypt.hash(adminPassword, 10);
   const admin = await prisma.user.upsert({
-    where: { email: "admin@ats.dev" },
+    where: { email: adminEmail },
     update: {},
-    create: { email: "admin@ats.dev", name: "Admin", role: "ADMIN" },
+    create: { email: adminEmail, name: "Admin", role: "ADMIN", password: hashed },
   });
 
   // Create sample job

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { formatDate, scoreToColor, scoreToLabel } from "@/lib/utils";
 import { CandidateActions } from "./actions";
+import { DeleteCandidateButton } from "./delete-button";
 
 const statusVariant: Record<string, "default" | "success" | "warning" | "secondary" | "danger"> = {
   ACTIVE: "success",
@@ -61,6 +62,9 @@ export default async function CandidateDetailPage({
           {candidate.firstName} {candidate.lastName}
         </h1>
         <Badge variant="outline">{candidate.source.replace(/_/g, " ")}</Badge>
+        <div className="ml-auto">
+          <DeleteCandidateButton candidateId={candidate.id} candidateName={`${candidate.firstName} ${candidate.lastName}`} />
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -137,6 +141,32 @@ export default async function CandidateDetailPage({
               </CardContent>
             </Card>
           )}
+
+          {candidate.resumeText?.startsWith("RESUME_FILE:") && (() => {
+            const parts = candidate.resumeText.split(":");
+            const filename = parts[1] ?? "resume";
+            const base64 = parts.slice(2).join(":");
+            const ext = filename.split(".").pop()?.toLowerCase();
+            const mime = ext === "pdf" ? "application/pdf"
+              : ext === "docx" ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              : "application/msword";
+            const href = `data:${mime};base64,${base64}`;
+            return (
+              <Card>
+                <CardHeader><CardTitle className="text-sm">Resume / CV</CardTitle></CardHeader>
+                <CardContent className="pt-0">
+                  <a
+                    href={href}
+                    download={filename}
+                    className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                  >
+                    <BriefcaseIcon className="h-4 w-4" />
+                    Download {filename}
+                  </a>
+                </CardContent>
+              </Card>
+            );
+          })()}
         </div>
 
         {/* Right: Applications + Notes */}

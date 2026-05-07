@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Lobah ATS",
-  description: "Lobah Games — AI-powered applicant tracking system",
+  description: "Applicant tracking system for Lobah Games",
 };
 
 export default function RootLayout({

@@ -1,10 +1,36 @@
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { UserIcon, ShieldIcon, GlobeIcon } from "lucide-react";
+import { UserIcon, ShieldIcon, GlobeIcon, UsersIcon } from "lucide-react";
+import { TeamSection } from "./TeamSection";
+
+export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const session = await auth();
+
+  const [members, invitations] = await Promise.all([
+    prisma.user.findMany({
+      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.invitation.findMany({ orderBy: { createdAt: "desc" } }),
+  ]);
+
+  // Filter out invitations for emails that already have accounts
+  const memberEmails = new Set(members.map((m) => m.email));
+  const pendingInvitations = invitations.filter((i) => !memberEmails.has(i.email));
+
+  const serialized = members.map((m) => ({
+    ...m,
+    createdAt: m.createdAt.toISOString(),
+  }));
+
+  const serializedInvites = pendingInvitations.map((i) => ({
+    ...i,
+    createdAt: i.createdAt.toISOString(),
+  }));
 
   return (
     <div className="p-8 max-w-2xl">
@@ -38,6 +64,23 @@ export default async function SettingsPage() {
               </div>
               <Badge variant="default">Admin</Badge>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <UsersIcon className="h-4 w-4" />
+              Team
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TeamSection
+              members={serialized}
+              invitations={serializedInvites}
+              currentUserId={session?.user?.id ?? ""}
+              inviteCode={process.env.SIGNUP_INVITE_CODE ?? ""}
+            />
           </CardContent>
         </Card>
 

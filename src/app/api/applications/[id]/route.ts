@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import type { ApplicationStatus } from "@prisma/client";
+import { sendStatusUpdate } from "@/lib/email";
 
 export async function PATCH(
   req: NextRequest,
@@ -67,6 +68,17 @@ export async function PATCH(
 
   if (activities.length > 0) {
     await prisma.activity.createMany({ data: activities });
+  }
+
+  // Send status update email
+  if (body.status && body.status !== prevApp?.status && application.candidate) {
+    const c = application.candidate;
+    void sendStatusUpdate({
+      candidateName: `${c.firstName} ${c.lastName}`,
+      candidateEmail: c.email ?? "",
+      jobTitle: (await prisma.job.findUnique({ where: { id: application.jobId }, select: { title: true } }))?.title ?? "",
+      status: body.status,
+    });
   }
 
   return NextResponse.json(application);

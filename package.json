@@ -13,15 +13,6 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/pg": "^8.18.0",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
     "@anthropic-ai/sdk": "^0.78.0",
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/adapter-pg": "^7.4.2",
@@ -35,8 +26,17 @@
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tabs": "^1.1.13",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pg": "^8.18.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vercel/blob": "^2.3.3",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
@@ -44,10 +44,14 @@
     "prisma": "^7.4.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "resend": "^6.12.2",
     "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "dotenv": "^17.3.1",
     "tsx": "^4.21.0"
   }

@@ -1,22 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { sendApplicationConfirmation, sendNewApplicationAlert } from "@/lib/email";
 
 const applySchema = z.object({
   jobId: z.string().min(1),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.string().email(),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-  currentTitle: z.string().optional(),
-  linkedinUrl: z.string().url().optional().or(z.literal("")),
-  coverLetter: z.string().optional(),
+  phone: z.string().min(1),
+  location: z.string().min(1),
+  currentTitle: z.string().min(1),
+  linkedinUrl: z.string().url(),
+  resumeData: z.string().optional(),
+  resumeFilename: z.string().optional(),
+  resumeText: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
   const body = await req.json() as unknown;
-  const data = applySchema.parse(body);
+
+  let data: z.infer<typeof applySchema>;
+  try {
+    data = applySchema.parse(body);
+  } catch (err) {
+    return NextResponse.json({ error: "Please fill in all required fields correctly." }, { status: 400 });
+  }
 
   const job = await prisma.job.findUnique({
     where: { id: data.jobId, status: "OPEN" },
@@ -27,7 +36,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Job not found or no longer accepting applications" }, { status: 404 });
   }
 
-  // Upsert candidate by email
+  const resumeText = data.resumeData && data.resumeFilename
+    ? `RESUME_FILE:${data.resumeFilename}:${data.resumeData}`
+    : data.resumeText
+    ? `RESUME_TEXT:${data.resumeText}`
+    : undefined;
+
   const candidate = await prisma.candidate.upsert({
     where: { email: data.email },
     update: {
@@ -36,7 +50,8 @@ export async function POST(req: NextRequest) {
       phone: data.phone,
       location: data.location,
       currentTitle: data.currentTitle,
-      linkedinUrl: data.linkedinUrl || undefined,
+      linkedinUrl: data.linkedinUrl,
+      ...(resumeText && { resumeText }),
     },
     create: {
       firstName: data.firstName,
@@ -45,12 +60,12 @@ export async function POST(req: NextRequest) {
       phone: data.phone,
       location: data.location,
       currentTitle: data.currentTitle,
-      linkedinUrl: data.linkedinUrl || undefined,
+      linkedinUrl: data.linkedinUrl,
+      resumeText,
       source: "JOB_BOARD",
     },
   });
 
-  // Check if already applied
   const existing = await prisma.application.findUnique({
     where: { candidateId_jobId: { candidateId: candidate.id, jobId: data.jobId } },
   });
@@ -65,15 +80,17 @@ export async function POST(req: NextRequest) {
       jobId: data.jobId,
       stageId: job.stages[0]?.id,
       source: "JOB_BOARD",
-      coverLetter: data.coverLetter,
       activities: {
-        create: {
-          type: "APPLIED",
-          description: "Applied via career page",
-        },
+        create: { type: "APPLIED", description: "Applied via career page" },
       },
     },
   });
+
+  const candidateName = `${data.firstName} ${data.lastName}`;
+
+  // Fire-and-forget — don't block the response waiting for emails
+  void sendApplicationConfirmation({ candidateName, candidateEmail: data.email, jobTitle: job.title });
+  void sendNewApplicationAlert({ candidateName, candidateEmail: data.email, jobTitle: job.title, applicationId: application.id });
 
   return NextResponse.json({ success: true, applicationId: application.id }, { status: 201 });
 }

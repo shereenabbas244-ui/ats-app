@@ -43,6 +43,8 @@ export default function CareersLayout({ children }: { children: React.ReactNode 
         <div className="max-w-6xl mx-auto px-6 mt-8 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-2 text-white/30 text-xs">
           <span>© {new Date().getFullYear()} All rights reserved to Lobah Games.</span>
           <div className="flex items-center gap-4">
+            <Link href="/careers/status" className="hover:text-white/60 transition-colors">Check Application Status</Link>
+            <span>•</span>
             <a href="https://lobah.com/privacy" className="hover:text-white/60 transition-colors">Privacy Policy</a>
             <span>•</span>
             <a href="https://lobah.com/terms" className="hover:text-white/60 transition-colors">Terms & Conditions</a>
