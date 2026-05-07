@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     try {
       await sendTeamInvite({
         toEmail: email,
-        inviterName: session.user.name ?? "Your team",
+        inviterName: session.user?.name ?? "Your team",
         inviteCode,
         signupUrl: `${getAppUrl()}/signup`,
       });
