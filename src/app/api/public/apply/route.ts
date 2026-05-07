@@ -88,11 +88,9 @@ export async function POST(req: NextRequest) {
 
   const candidateName = `${data.firstName} ${data.lastName}`;
 
-  // Send emails — await both so errors surface in Vercel logs
-  await Promise.allSettled([
-    sendApplicationConfirmation({ candidateName, candidateEmail: data.email, jobTitle: job.title }),
-    sendNewApplicationAlert({ candidateName, candidateEmail: data.email, jobTitle: job.title, applicationId: application.id }),
-  ]);
+  // Fire-and-forget — don't block the response waiting for emails
+  void sendApplicationConfirmation({ candidateName, candidateEmail: data.email, jobTitle: job.title });
+  void sendNewApplicationAlert({ candidateName, candidateEmail: data.email, jobTitle: job.title, applicationId: application.id });
 
   return NextResponse.json({ success: true, applicationId: application.id }, { status: 201 });
 }
