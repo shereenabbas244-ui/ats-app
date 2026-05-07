@@ -28,7 +28,14 @@ export default function SignupPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await res.json() as { error?: string };
+      let data: { error?: string } = {};
+      try {
+        data = await res.json() as { error?: string };
+      } catch {
+        setError(`Server error ${res.status} — check Vercel function logs.`);
+        setLoading(false);
+        return;
+      }
       if (!res.ok) {
         setError(data.error ?? "Something went wrong.");
         setLoading(false);

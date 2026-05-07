@@ -26,7 +26,7 @@ function LoginForm() {
     if (result?.ok) {
       router.push("/dashboard");
     } else {
-      setError("Invalid email or password.");
+      setError(`Login failed: ${result?.error ?? "unknown error"}`);
       setLoading(false);
     }
   }
