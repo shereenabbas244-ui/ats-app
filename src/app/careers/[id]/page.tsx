@@ -83,6 +83,11 @@ export default function JobDetailPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!resumeFile || !resumeData) {
+      setErrorMsg("Please attach your resume / CV before submitting.");
+      setFormState("error");
+      return;
+    }
     setFormState("submitting");
     setErrorMsg("");
     try {
@@ -233,7 +238,7 @@ export default function JobDetailPage() {
 
                     {/* Resume upload — label+htmlFor is the only approach browsers never block */}
                     <div>
-                      <p className="block text-xs text-white/50 mb-2">Resume / CV</p>
+                      <p className="block text-xs text-white/50 mb-2">Resume / CV *</p>
                       <input
                         id="resume-file-input"
                         ref={fileInputRef}

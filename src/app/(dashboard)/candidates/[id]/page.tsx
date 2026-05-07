@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { formatDate, scoreToColor, scoreToLabel } from "@/lib/utils";
 import { CandidateActions } from "./actions";
+import { DeleteCandidateButton } from "./delete-button";
 
 const statusVariant: Record<string, "default" | "success" | "warning" | "secondary" | "danger"> = {
   ACTIVE: "success",
@@ -61,6 +62,9 @@ export default async function CandidateDetailPage({
           {candidate.firstName} {candidate.lastName}
         </h1>
         <Badge variant="outline">{candidate.source.replace(/_/g, " ")}</Badge>
+        <div className="ml-auto">
+          <DeleteCandidateButton candidateId={candidate.id} candidateName={`${candidate.firstName} ${candidate.lastName}`} />
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-6">

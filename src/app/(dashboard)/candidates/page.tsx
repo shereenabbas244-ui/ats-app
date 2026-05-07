@@ -26,6 +26,7 @@ export default async function CandidatesPage() {
   const serialized = candidates.map((c) => ({
     ...c,
     createdAt: c.createdAt.toISOString(),
+    updatedAt: c.updatedAt.toISOString(),
     applications: c.applications.map((a) => ({
       job: a.job,
       stage: a.stage,
