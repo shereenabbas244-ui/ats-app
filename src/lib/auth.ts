@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import LinkedInProvider from "next-auth/providers/linkedin";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
@@ -9,26 +10,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     CredentialsProvider({
       name: "Email Login",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "admin@ats.dev" },
-        name: { label: "Name", type: "text", placeholder: "Admin" },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email) return null;
+        if (!credentials?.email || !credentials?.password) return null;
         const email = credentials.email as string;
-        const name = (credentials.name as string) || "Admin";
-        try {
-          const user = await prisma.user.upsert({
-            where: { email },
-            create: { email, name, role: "ADMIN" },
-            update: { name },
-          });
-          return { id: user.id, email: user.email ?? email, name: user.name ?? name };
-        } catch {
-          return null;
-        }
+        const password = credentials.password as string;
+
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user || !user.password) return null;
+
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) return null;
+
+        return { id: user.id, email: user.email ?? email, name: user.name ?? "" };
       },
     }),
-    // LinkedIn OAuth (only when credentials are set)
     ...(process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET
       ? [
           LinkedInProvider({

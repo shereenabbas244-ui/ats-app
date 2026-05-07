@@ -1,38 +1,35 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
-import { BriefcaseIcon, LinkedinIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { BriefcaseIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@ats.dev");
-  const [name, setName] = useState("Admin");
+  const params = useSearchParams();
+  const registered = params.get("registered");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleDevLogin = async (e: React.FormEvent) => {
+  const inputClass =
+    "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#E55B1F] focus:outline-none focus:ring-2 focus:ring-[#E55B1F]/20";
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const result = await signIn("credentials", {
-      email,
-      name,
-      redirect: false,
-    });
+    const result = await signIn("credentials", { email, password, redirect: false });
     if (result?.ok) {
       router.push("/dashboard");
     } else {
-      setError("Login failed. Try again.");
+      setError("Invalid email or password.");
       setLoading(false);
     }
-  };
-
-  const handleLinkedIn = () => signIn("linkedin", { callbackUrl: "/dashboard" });
-
-  const inputClass =
-    "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -46,73 +43,59 @@ export default function LoginPage() {
             <p className="text-sm text-gray-500 mt-1">Lobah Games hiring portal</p>
           </div>
 
-          {/* Dev Login */}
-          <form onSubmit={handleDevLogin} className="space-y-3 mb-4">
-            <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700 font-medium">
-              ⚡ Dev mode — enter any email to log in instantly
+          {registered && (
+            <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700 font-medium mb-4 text-center">
+              Account created! Sign in below.
             </div>
-            <input
-              type="email"
-              required
-              className={inputClass}
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <input
-              type="text"
-              className={inputClass}
-              placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+              <input
+                type="email"
+                required
+                className={inputClass}
+                placeholder="you@lobah.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Password</label>
+              <input
+                type="password"
+                required
+                className={inputClass}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-indigo-600 text-white font-semibold py-3 hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="w-full rounded-xl bg-[#E55B1F] text-white font-semibold py-3 hover:bg-[#d04e15] transition-colors disabled:opacity-50"
             >
               {loading ? "Signing in…" : "Sign In"}
             </button>
           </form>
 
-          {/* LinkedIn divider */}
-          <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400">or</span>
-            <div className="flex-1 h-px bg-gray-200" />
-          </div>
-
-          <button
-            onClick={handleLinkedIn}
-            className="w-full flex items-center justify-center gap-3 rounded-xl bg-[#0A66C2] text-white font-semibold py-3 hover:bg-[#004182] transition-colors shadow-sm"
-          >
-            <LinkedinIcon className="h-5 w-5" />
-            Sign in with LinkedIn
-          </button>
-          <p className="text-xs text-center text-gray-400 mt-2">
-            LinkedIn login requires OAuth credentials in .env
+          <p className="text-sm text-center text-gray-500 mt-6">
+            New team member?{" "}
+            <Link href="/signup" className="text-[#E55B1F] font-medium hover:underline">Create an account</Link>
           </p>
-
-          <div className="mt-6 space-y-2">
-            <p className="text-xs text-center text-gray-400">Includes:</p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                "AI Resume Parsing",
-                "Candidate Scoring",
-                "Kanban Pipeline",
-                "LinkedIn Sync",
-                "Interview Q&A",
-                "Batch AI Ranking",
-              ].map((f) => (
-                <div key={f} className="flex items-center gap-1.5 text-xs text-gray-600">
-                  <span className="text-indigo-500">✓</span>{f}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
