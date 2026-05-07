@@ -234,15 +234,16 @@ export default function JobDetailPage() {
                       <textarea name="coverLetter" value={form.coverLetter} onChange={handleChange} rows={3} className={`${iClass} resize-none`} placeholder="Tell us why you'd be a great fit..." />
                     </div>
 
-                    {/* Resume upload */}
+                    {/* Resume upload — label+htmlFor is the only approach browsers never block */}
                     <div>
-                      <label className="block text-xs text-white/50 mb-2">Resume / CV</label>
+                      <p className="block text-xs text-white/50 mb-2">Resume / CV</p>
                       <input
+                        id="resume-file-input"
                         ref={fileInputRef}
                         type="file"
                         accept=".pdf,.doc,.docx"
                         onChange={handleFileChange}
-                        style={{ display: "none" }}
+                        className="sr-only"
                       />
                       {resumeFile && resumeData ? (
                         <div className="flex items-center gap-3 bg-white/5 border border-[#E55B1F]/40 rounded-lg px-4 py-3">
@@ -253,14 +254,13 @@ export default function JobDetailPage() {
                           </button>
                         </div>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="flex items-center gap-2 w-full bg-white/5 border border-white/10 hover:border-[#E55B1F]/60 rounded-lg px-4 py-3 text-sm text-white/60 hover:text-white transition-colors"
+                        <label
+                          htmlFor="resume-file-input"
+                          className="flex items-center gap-2 w-full bg-white/5 border border-white/10 hover:border-[#E55B1F]/60 rounded-lg px-4 py-3 text-sm text-white/60 hover:text-white transition-colors cursor-pointer"
                         >
                           <FileTextIcon className="h-4 w-4 shrink-0" />
                           Choose file (PDF or Word, max 5MB)
-                        </button>
+                        </label>
                       )}
                     </div>
 
