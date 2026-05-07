@@ -177,9 +177,9 @@ export default function JobDetailPage() {
         </div>
       </div>
 
-      {/* Modal — outer overlay scrolls, no overflow on inner container so file picker works */}
+      {/* Modal — no backdrop-filter (blocks OS file dialog in Chromium), outer overlay scrolls */}
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/80 overflow-y-auto">
           <div className="flex min-h-full items-start justify-center p-6 py-12">
             <div className="bg-[#161616] border border-white/10 rounded-2xl w-full max-w-lg p-8">
 
@@ -234,9 +234,16 @@ export default function JobDetailPage() {
                       <textarea name="coverLetter" value={form.coverLetter} onChange={handleChange} rows={3} className={`${iClass} resize-none`} placeholder="Tell us why you'd be a great fit..." />
                     </div>
 
-                    {/* Resume upload — input is NOT inside any overflow container */}
+                    {/* Resume upload */}
                     <div>
                       <label className="block text-xs text-white/50 mb-2">Resume / CV</label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                      />
                       {resumeFile && resumeData ? (
                         <div className="flex items-center gap-3 bg-white/5 border border-[#E55B1F]/40 rounded-lg px-4 py-3">
                           <FileTextIcon className="h-5 w-5 text-[#E55B1F] shrink-0" />
@@ -246,15 +253,15 @@ export default function JobDetailPage() {
                           </button>
                         </div>
                       ) : (
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          onChange={handleFileChange}
-                          className="block w-full text-sm text-white/60 cursor-pointer"
-                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex items-center gap-2 w-full bg-white/5 border border-white/10 hover:border-[#E55B1F]/60 rounded-lg px-4 py-3 text-sm text-white/60 hover:text-white transition-colors"
+                        >
+                          <FileTextIcon className="h-4 w-4 shrink-0" />
+                          Choose file (PDF or Word, max 5MB)
+                        </button>
                       )}
-                      <p className="text-xs text-white/30 mt-1">PDF or Word, max 5MB</p>
                     </div>
 
                     {formState === "error" && (
