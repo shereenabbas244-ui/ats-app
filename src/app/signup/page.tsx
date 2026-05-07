@@ -41,7 +41,7 @@ export default function SignupPage() {
         setLoading(false);
         return;
       }
-      router.push("/login?registered=1");
+      window.location.href = "/login?registered=1";
     } catch {
       setError("Network error. Please try again.");
       setLoading(false);

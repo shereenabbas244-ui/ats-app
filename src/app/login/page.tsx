@@ -24,7 +24,7 @@ function LoginForm() {
     setError("");
     const result = await signIn("credentials", { email, password, redirect: false });
     if (result?.ok) {
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     } else {
       setError(`Login failed: ${result?.error ?? "unknown error"}`);
       setLoading(false);
