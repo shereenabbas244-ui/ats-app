@@ -14,6 +14,22 @@ export async function GET() {
   return NextResponse.json(users);
 }
 
+export async function PATCH(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { userId, role } = await req.json() as { userId: string; role: string };
+  const validRoles = ["ADMIN", "RECRUITER", "HIRING_MANAGER"];
+  if (!validRoles.includes(role)) return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { role: role as "ADMIN" | "RECRUITER" | "HIRING_MANAGER" },
+    select: { id: true, role: true },
+  });
+  return NextResponse.json(user);
+}
+
 export async function DELETE(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

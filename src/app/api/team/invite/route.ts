@@ -12,9 +12,13 @@ export async function POST(req: NextRequest) {
   const inviteCode = process.env.SIGNUP_INVITE_CODE;
   if (!inviteCode) return NextResponse.json({ error: "SIGNUP_INVITE_CODE is not set in environment variables." }, { status: 500 });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "https://your-app.vercel.app";
+  if (!process.env.RESEND_API_KEY) {
+    return NextResponse.json({ error: "Email is not configured (RESEND_API_KEY missing). Share the signup link manually." }, { status: 500 });
+  }
+
+  // Fix operator precedence — evaluate VERCEL_URL separately
+  const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? vercelUrl ?? "https://your-app.vercel.app";
 
   try {
     await sendTeamInvite({
@@ -26,6 +30,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[invite]", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: `Failed to send email: ${String(err)}` }, { status: 500 });
   }
 }

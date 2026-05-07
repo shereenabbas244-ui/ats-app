@@ -11,6 +11,18 @@ interface TeamMember {
   createdAt: string;
 }
 
+const roleLabel: Record<string, string> = {
+  ADMIN: "Admin",
+  RECRUITER: "Recruiter",
+  HIRING_MANAGER: "Hiring Manager",
+};
+
+const roleColors: Record<string, string> = {
+  ADMIN: "bg-orange-100 text-orange-700",
+  RECRUITER: "bg-blue-100 text-blue-700",
+  HIRING_MANAGER: "bg-purple-100 text-purple-700",
+};
+
 export function TeamSection({
   members: initial,
   currentUserId,
@@ -44,6 +56,17 @@ export function TeamSection({
     setInviting(false);
   }
 
+  async function handleRoleChange(userId: string, newRole: string) {
+    const res = await fetch("/api/team", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, role: newRole }),
+    });
+    if (res.ok) {
+      setMembers((prev) => prev.map((m) => m.id === userId ? { ...m, role: newRole } : m));
+    }
+  }
+
   async function handleRemove(userId: string) {
     setRemovingId(userId);
     const res = await fetch("/api/team", {
@@ -51,18 +74,10 @@ export function TeamSection({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId }),
     });
-    if (res.ok) {
-      setMembers((prev) => prev.filter((m) => m.id !== userId));
-    }
+    if (res.ok) setMembers((prev) => prev.filter((m) => m.id !== userId));
     setRemovingId(null);
     setConfirmId(null);
   }
-
-  const roleLabel: Record<string, string> = {
-    ADMIN: "Admin",
-    RECRUITER: "Recruiter",
-    HIRING_MANAGER: "Hiring Manager",
-  };
 
   return (
     <div className="space-y-6">
@@ -114,12 +129,19 @@ export function TeamSection({
                   <p className="text-xs text-gray-500">{m.email}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  m.role === "ADMIN" ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-600"
-                }`}>
-                  {roleLabel[m.role] ?? m.role}
-                </span>
+              <div className="flex items-center gap-2">
+                {/* Role selector */}
+                <select
+                  value={m.role}
+                  onChange={(e) => handleRoleChange(m.id, e.target.value)}
+                  disabled={m.id === currentUserId}
+                  className={`text-xs px-2 py-0.5 rounded-full font-medium border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#E55B1F] disabled:cursor-default ${roleColors[m.role] ?? "bg-gray-100 text-gray-600"}`}
+                >
+                  <option value="ADMIN">Admin</option>
+                  <option value="RECRUITER">Recruiter</option>
+                  <option value="HIRING_MANAGER">Hiring Manager</option>
+                </select>
+
                 {m.id !== currentUserId && (
                   confirmId === m.id ? (
                     <div className="flex items-center gap-1.5">
@@ -135,10 +157,7 @@ export function TeamSection({
                       </button>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => setConfirmId(m.id)}
-                      className="text-gray-300 hover:text-red-500 transition-colors"
-                    >
+                    <button onClick={() => setConfirmId(m.id)} className="text-gray-300 hover:text-red-500 transition-colors">
                       <Trash2Icon className="h-3.5 w-3.5" />
                     </button>
                   )
