@@ -32,7 +32,7 @@ function Stars({ score }: { score: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <StarIcon
           key={i}
-          className={`h-4 w-4 ${i < stars ? "text-amber-400 fill-amber-400" : "text-white/20"}`}
+          className={`h-4 w-4 ${i < stars ? "text-amber-400 fill-amber-400" : "text-theme-text20"}`}
         />
       ))}
     </div>
@@ -130,16 +130,16 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0D1117]">
+    <div className="min-h-screen bg-theme-bg">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#1a1040] via-[#13103a] to-[#0d0d2b] border-b border-white/[0.06]">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#1a1040] via-[#13103a] to-[#0d0d2b] border-b border-theme-border">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.15),transparent_60%)]" />
         <div className="relative px-8 py-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-1">
+            <h1 className="text-3xl font-bold text-theme-text mb-1">
               Welcome back! 👋
             </h1>
-            <p className="text-white/50 text-sm">Here&apos;s what&apos;s happening with your hiring pipeline today.</p>
+            <p className="text-theme-text50 text-sm">Here&apos;s what&apos;s happening with your hiring pipeline today.</p>
           </div>
           <div className="hidden lg:flex items-center gap-1 text-xs">
             {["Applied", "Screening", "Interview", "Offer", "Hired"].map((stage, i) => (
@@ -148,11 +148,11 @@ export default async function DashboardPage() {
                   stage === "Applied" ? "bg-indigo-500/100/20 text-indigo-300 border border-indigo-500/30" :
                   stage === "Interview" ? "bg-purple-500/100/20 text-purple-300 border border-purple-500/30" :
                   stage === "Hired" ? "bg-green-500/100/20 text-green-300 border border-green-500/30" :
-                  "bg-white/5 text-white/40 border border-white/10"
+                  "bg-theme-faint text-theme-text40 border border-theme-border2"
                 }`}>
                   {stage}
                 </div>
-                {i < 4 && <ChevronRightIcon className="h-3.5 w-3.5 text-white/20" />}
+                {i < 4 && <ChevronRightIcon className="h-3.5 w-3.5 text-theme-text20" />}
               </div>
             ))}
           </div>
@@ -169,10 +169,10 @@ export default async function DashboardPage() {
             >
               <div className="flex items-start justify-between mb-3">
                 <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
-                <span className="text-xs text-white/40">{stat.sub}</span>
+                <span className="text-xs text-theme-text40">{stat.sub}</span>
               </div>
-              <p className="text-4xl font-bold text-white mb-1">{stat.value}</p>
-              <p className="text-sm text-white/50">{stat.label}</p>
+              <p className="text-4xl font-bold text-theme-text mb-1">{stat.value}</p>
+              <p className="text-sm text-theme-text50">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -180,10 +180,10 @@ export default async function DashboardPage() {
         {/* Pipeline + Activity */}
         <div className="grid grid-cols-3 gap-6">
           {/* Pipeline Overview */}
-          <div className="col-span-2 rounded-xl border border-white/[0.06] bg-[#161B27] p-6">
+          <div className="col-span-2 rounded-xl border border-theme-border bg-theme-surface p-6">
             <div className="flex items-center gap-2 mb-6">
-              <TrendingUpIcon className="h-4 w-4 text-white/40" />
-              <h2 className="font-semibold text-white">Pipeline Overview</h2>
+              <TrendingUpIcon className="h-4 w-4 text-theme-text40" />
+              <h2 className="font-semibold text-theme-text">Pipeline Overview</h2>
             </div>
             <div className="space-y-4">
               {PIPELINE_STAGES.map(({ status, label, bg }) => {
@@ -192,14 +192,14 @@ export default async function DashboardPage() {
                 return (
                   <div key={status} className="space-y-1.5">
                     <div className="flex items-center justify-between text-sm">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${bg}/20 text-white/70`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${bg}/20 text-theme-text70`}>
                         {label}
                       </span>
-                      <span className="text-white/40 text-xs">
+                      <span className="text-theme-text40 text-xs">
                         {count} {count === 1 ? "candidate" : "candidates"}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
+                    <div className="h-2 rounded-full bg-theme-subtle overflow-hidden">
                       <div
                         className={`h-full rounded-full ${bg} transition-all`}
                         style={{ width: `${Math.max(pct, count > 0 ? 4 : 0)}%` }}
@@ -212,23 +212,23 @@ export default async function DashboardPage() {
           </div>
 
           {/* Recent Activity */}
-          <div className="rounded-xl border border-white/[0.06] bg-[#161B27] p-6">
+          <div className="rounded-xl border border-theme-border bg-theme-surface p-6">
             <div className="flex items-center gap-2 mb-6">
-              <ClockIcon className="h-4 w-4 text-white/40" />
-              <h2 className="font-semibold text-white">Recent Activity</h2>
+              <ClockIcon className="h-4 w-4 text-theme-text40" />
+              <h2 className="font-semibold text-theme-text">Recent Activity</h2>
             </div>
             <div className="space-y-4">
               {recentActivity.length === 0 ? (
-                <p className="text-sm text-white/30 text-center py-4">No activity yet.</p>
+                <p className="text-sm text-theme-text30 text-center py-4">No activity yet.</p>
               ) : (
                 recentActivity.map((app) => (
                   <div key={app.id} className="flex gap-3">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.05] mt-0.5">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-theme-hover mt-0.5">
                       <ActivityIcon status={app.status} />
                     </div>
                     <div>
-                      <p className="text-sm text-white/80 leading-snug">{activityLabel(app)}</p>
-                      <p className="text-xs text-white/30 mt-0.5">{formatRelativeTime(app.appliedAt)}</p>
+                      <p className="text-sm text-theme-text80 leading-snug">{activityLabel(app)}</p>
+                      <p className="text-xs text-theme-text30 mt-0.5">{formatRelativeTime(app.appliedAt)}</p>
                     </div>
                   </div>
                 ))
@@ -239,25 +239,25 @@ export default async function DashboardPage() {
 
         {/* Top Rated Candidates */}
         {topCandidates.length > 0 && (
-          <div className="rounded-xl border border-white/[0.06] bg-[#161B27] p-6">
+          <div className="rounded-xl border border-theme-border bg-theme-surface p-6">
             <div className="flex items-center gap-2 mb-6">
               <SparklesIcon className="h-4 w-4 text-amber-400" />
-              <h2 className="font-semibold text-white">Top Rated Candidates</h2>
+              <h2 className="font-semibold text-theme-text">Top Rated Candidates</h2>
             </div>
             <div className="grid grid-cols-3 gap-3">
               {topCandidates.map((app) => (
                 <div
                   key={app.id}
-                  className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-3 hover:bg-white/[0.06] transition-colors"
+                  className="flex items-center gap-3 rounded-lg border border-theme-border bg-theme-faint px-4 py-3 hover:bg-theme-subtle transition-colors"
                 >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-theme-text text-sm font-bold">
                     {app.candidate.firstName[0]}{app.candidate.lastName[0]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
+                    <p className="text-sm font-medium text-theme-text truncate">
                       {app.candidate.firstName} {app.candidate.lastName}
                     </p>
-                    <p className="text-xs text-white/40 truncate">{app.job.title}</p>
+                    <p className="text-xs text-theme-text40 truncate">{app.job.title}</p>
                     <Stars score={app.aiScore!} />
                   </div>
                 </div>
@@ -267,9 +267,9 @@ export default async function DashboardPage() {
         )}
 
         {topCandidates.length === 0 && (
-          <div className="rounded-xl border border-white/[0.06] bg-[#161B27] p-8 text-center">
-            <SparklesIcon className="h-8 w-8 text-white/20 mx-auto mb-3" />
-            <p className="text-sm text-white/40">
+          <div className="rounded-xl border border-theme-border bg-theme-surface p-8 text-center">
+            <SparklesIcon className="h-8 w-8 text-theme-text20 mx-auto mb-3" />
+            <p className="text-sm text-theme-text40">
               Top rated candidates will appear here once AI scores applications.
             </p>
             <Link href="/candidates" className="text-indigo-400 text-sm hover:text-indigo-300 mt-2 inline-block">

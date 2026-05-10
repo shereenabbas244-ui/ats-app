@@ -1,27 +1,44 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState, Suspense } from "react";
-import { BriefcaseIcon } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense, useEffect } from "react";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+const REMEMBER_EMAIL_KEY = "lobah_ats_email";
+
 function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
   const registered = params.get("registered");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const saved = localStorage.getItem(REMEMBER_EMAIL_KEY);
+    if (saved) {
+      setEmail(saved);
+      setRememberMe(true);
+    }
+  }, []);
+
   const inputClass =
-    "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#E55B1F] focus:outline-none focus:ring-2 focus:ring-[#E55B1F]/20";
+    "w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#E55B1F] focus:outline-none focus:ring-2 focus:ring-[#E55B1F]/20";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (rememberMe) {
+      localStorage.setItem(REMEMBER_EMAIL_KEY, email);
+    } else {
+      localStorage.removeItem(REMEMBER_EMAIL_KEY);
+    }
+
     const result = await signIn("credentials", { email, password, redirect: false });
     if (result?.ok) {
       window.location.href = "/dashboard";
@@ -36,8 +53,15 @@ function LoginForm() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <div className="text-center mb-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E55B1F] mx-auto mb-4">
-              <BriefcaseIcon className="h-7 w-7 text-white" />
+            <div className="flex justify-center mb-5">
+              <Image
+                src="/Lobah new logo.png"
+                alt="Lobah"
+                width={140}
+                height={48}
+                className="h-12 w-auto object-contain"
+                priority
+              />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Lobah ATS</h1>
             <p className="text-sm text-gray-500 mt-1">Lobah Games hiring portal</p>
@@ -55,6 +79,7 @@ function LoginForm() {
               <input
                 type="email"
                 required
+                autoComplete="email"
                 className={inputClass}
                 placeholder="you@lobah.com"
                 value={email}
@@ -66,12 +91,27 @@ function LoginForm() {
               <input
                 type="password"
                 required
+                autoComplete="current-password"
                 className={inputClass}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                id="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-[#E55B1F] accent-[#E55B1F]"
+              />
+              <label htmlFor="remember-me" className="text-sm text-gray-600 cursor-pointer select-none">
+                Remember my email
+              </label>
+            </div>
+
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button
               type="submit"

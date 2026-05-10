@@ -25,17 +25,17 @@ export function DeleteCandidateButton({
   if (confirming) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm text-white/50">Delete {candidateName}?</span>
+        <span className="text-sm text-theme-text50">Delete {candidateName}?</span>
         <button
           onClick={handleDelete}
           disabled={loading}
-          className="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg font-medium disabled:opacity-50 transition-colors"
+          className="text-xs bg-red-600 hover:bg-red-700 text-theme-text px-3 py-1.5 rounded-lg font-medium disabled:opacity-50 transition-colors"
         >
           {loading ? "Deleting…" : "Yes, delete"}
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="text-xs border border-white/[0.08] text-white/60 hover:bg-white/[0.03] px-3 py-1.5 rounded-lg font-medium transition-colors"
+          className="text-xs border border-theme-border2 text-theme-text60 hover:bg-theme-faint px-3 py-1.5 rounded-lg font-medium transition-colors"
         >
           Cancel
         </button>
