@@ -70,13 +70,14 @@ export async function PATCH(
     await prisma.activity.createMany({ data: activities });
   }
 
-  // Send status update email
+  // Send status update email — must await before response on Vercel serverless
   if (body.status && body.status !== prevApp?.status && application.candidate) {
     const c = application.candidate;
-    void sendStatusUpdate({
+    const jobTitle = (await prisma.job.findUnique({ where: { id: application.jobId }, select: { title: true } }))?.title ?? "";
+    await sendStatusUpdate({
       candidateName: `${c.firstName} ${c.lastName}`,
       candidateEmail: c.email ?? "",
-      jobTitle: (await prisma.job.findUnique({ where: { id: application.jobId }, select: { title: true } }))?.title ?? "",
+      jobTitle,
       status: body.status,
     });
   }

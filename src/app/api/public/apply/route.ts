@@ -88,9 +88,12 @@ export async function POST(req: NextRequest) {
 
   const candidateName = `${data.firstName} ${data.lastName}`;
 
-  // Fire-and-forget — don't block the response waiting for emails
-  void sendApplicationConfirmation({ candidateName, candidateEmail: data.email, jobTitle: job.title });
-  void sendNewApplicationAlert({ candidateName, candidateEmail: data.email, jobTitle: job.title, applicationId: application.id });
+  // Await both emails before responding — Vercel kills the function after response,
+  // so fire-and-forget (void) never completes on serverless.
+  await Promise.all([
+    sendApplicationConfirmation({ candidateName, candidateEmail: data.email, jobTitle: job.title }),
+    sendNewApplicationAlert({ candidateName, candidateEmail: data.email, jobTitle: job.title, applicationId: application.id }),
+  ]);
 
   return NextResponse.json({ success: true, applicationId: application.id }, { status: 201 });
 }
