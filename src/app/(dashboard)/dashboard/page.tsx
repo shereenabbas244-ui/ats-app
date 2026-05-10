@@ -10,19 +10,18 @@ import {
   ClockIcon,
   FileTextIcon,
   ArrowRightIcon,
-  ChevronRightIcon,
   SparklesIcon,
   StarIcon,
 } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 
 const PIPELINE_STAGES = [
-  { status: "ACTIVE", label: "Applied", color: "#6366f1", bg: "bg-indigo-500" },
-  { status: "SCREENING", label: "Screening", color: "#f59e0b", bg: "bg-amber-500" },
-  { status: "INTERVIEW", label: "Interview", color: "#a855f7", bg: "bg-purple-500" },
-  { status: "OFFER", label: "Offer", color: "#10b981", bg: "bg-emerald-500" },
-  { status: "HIRED", label: "Hired", color: "#22c55e", bg: "bg-green-500" },
-  { status: "REJECTED", label: "Rejected", color: "#ef4444", bg: "bg-red-500" },
+  { status: "ACTIVE",    label: "Applied",   bar: "bg-indigo-500",  badge: "bg-indigo-500/20 text-indigo-500 dark:text-indigo-300" },
+  { status: "SCREENING", label: "Screening", bar: "bg-amber-500",   badge: "bg-amber-500/20 text-amber-600 dark:text-amber-300" },
+  { status: "INTERVIEW", label: "Interview", bar: "bg-purple-500",  badge: "bg-purple-500/20 text-purple-600 dark:text-purple-300" },
+  { status: "OFFER",     label: "Offer",     bar: "bg-emerald-500", badge: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300" },
+  { status: "HIRED",     label: "Hired",     bar: "bg-green-500",   badge: "bg-green-500/20 text-green-600 dark:text-green-300" },
+  { status: "REJECTED",  label: "Rejected",  bar: "bg-red-500",     badge: "bg-red-500/20 text-red-600 dark:text-red-300" },
 ];
 
 function Stars({ score }: { score: number }) {
@@ -134,28 +133,11 @@ export default async function DashboardPage() {
       {/* Hero Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#1a1040] via-[#13103a] to-[#0d0d2b] border-b border-white/[0.06]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.15),transparent_60%)]" />
-        <div className="relative px-8 py-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-1">
-              Welcome back! 👋
-            </h1>
-            <p className="text-white/50 text-sm">Here&apos;s what&apos;s happening with your hiring pipeline today.</p>
-          </div>
-          <div className="hidden lg:flex items-center gap-1 text-xs">
-            {["Applied", "Screening", "Interview", "Offer", "Hired"].map((stage, i) => (
-              <div key={stage} className="flex items-center gap-1">
-                <div className={`px-3 py-1.5 rounded-md font-medium ${
-                  stage === "Applied" ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" :
-                  stage === "Interview" ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" :
-                  stage === "Hired" ? "bg-green-500/20 text-green-300 border border-green-500/30" :
-                  "bg-white/5 text-white/40 border border-white/10"
-                }`}>
-                  {stage}
-                </div>
-                {i < 4 && <ChevronRightIcon className="h-3.5 w-3.5 text-white/20" />}
-              </div>
-            ))}
-          </div>
+        <div className="relative px-8 py-8">
+          <h1 className="text-3xl font-bold text-white mb-1">
+            Welcome back! 👋
+          </h1>
+          <p className="text-white/50 text-sm">Here&apos;s what&apos;s happening with your hiring pipeline today.</p>
         </div>
       </div>
 
@@ -186,13 +168,13 @@ export default async function DashboardPage() {
               <h2 className="font-semibold text-theme-text">Pipeline Overview</h2>
             </div>
             <div className="space-y-4">
-              {PIPELINE_STAGES.map(({ status, label, bg }) => {
+              {PIPELINE_STAGES.map(({ status, label, bar, badge }) => {
                 const count = countByStatus[status] ?? 0;
                 const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0;
                 return (
                   <div key={status} className="space-y-1.5">
                     <div className="flex items-center justify-between text-sm">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${bg}/20 text-theme-text70`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${badge}`}>
                         {label}
                       </span>
                       <span className="text-theme-text40 text-xs">
@@ -201,7 +183,7 @@ export default async function DashboardPage() {
                     </div>
                     <div className="h-2 rounded-full bg-theme-subtle overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${bg} transition-all`}
+                        className={`h-full rounded-full ${bar} transition-all`}
                         style={{ width: `${Math.max(pct, count > 0 ? 4 : 0)}%` }}
                       />
                     </div>
