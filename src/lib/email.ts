@@ -24,18 +24,17 @@ function getTransport() {
   });
 }
 
-const FROM = process.env.EMAIL_FROM ?? "Lobah Careers <careers@lobah.com>";
+const FROM = process.env.EMAIL_FROM
+  // Fall back to the SMTP user itself — always accepted by Brevo as sender
+  ?? (process.env.BREVO_SMTP_USER ? `Lobah Careers <${process.env.BREVO_SMTP_USER}>` : "Lobah Careers <careers@lobah.com>");
 const HR_EMAIL = process.env.HR_EMAIL ?? "hr@lobah.com";
 
 async function send(options: { to: string; subject: string; html: string }) {
   const transport = getTransport();
   if (!transport) return;
-  try {
-    const info = await transport.sendMail({ from: FROM, ...options });
-    console.log("[email] Sent to", options.to, "—", info.messageId);
-  } catch (err) {
-    console.error("[email] Failed:", err);
-  }
+  // Let errors propagate so Vercel logs show the real reason for failure
+  const info = await transport.sendMail({ from: FROM, ...options });
+  console.log("[email] Sent to", options.to, "—", info.messageId);
 }
 
 // ─── Email templates ─────────────────────────────────────────────────────────
