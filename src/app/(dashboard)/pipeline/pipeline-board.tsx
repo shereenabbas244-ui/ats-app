@@ -89,9 +89,9 @@ export function PipelineBoard({ jobs, selectedJobId, stages }: Props) {
   if (jobs.length === 0) {
     return (
       <div className="p-8 flex flex-col items-center justify-center h-full">
-        <KanbanIcon className="h-16 w-16 text-gray-300 mb-4" />
-        <p className="text-gray-500 font-medium">No open jobs</p>
-        <p className="text-sm text-gray-400">Create a job posting to see the pipeline.</p>
+        <KanbanIcon className="h-16 w-16 text-white/30 mb-4" />
+        <p className="text-white/50 font-medium">No open jobs</p>
+        <p className="text-sm text-white/40">Create a job posting to see the pipeline.</p>
       </div>
     );
   }
@@ -99,10 +99,10 @@ export function PipelineBoard({ jobs, selectedJobId, stages }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-200 bg-white">
-        <h1 className="text-xl font-bold text-gray-900 shrink-0">Pipeline</h1>
+      <div className="flex items-center gap-4 px-6 py-4 border-b border-white/[0.08] bg-[#1C2133]">
+        <h1 className="text-xl font-bold text-white shrink-0">Pipeline</h1>
         <select
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="rounded-lg border border-white/15 bg-white/[0.04] px-3 py-1.5 text-sm text-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           value={selectedJobId ?? ""}
           onChange={(e) => handleJobChange(e.target.value)}
         >
@@ -142,14 +142,14 @@ export function PipelineBoard({ jobs, selectedJobId, stages }: Props) {
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ backgroundColor: stage.color }}
                 />
-                <span className="text-sm font-semibold text-gray-700">{stage.name}</span>
-                <span className="ml-auto rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 font-medium">
+                <span className="text-sm font-semibold text-white/80">{stage.name}</span>
+                <span className="ml-auto rounded-full bg-white/[0.06] px-2 py-0.5 text-xs text-white/50 font-medium">
                   {stage.applications.length}
                 </span>
               </div>
 
               {/* Cards */}
-              <div className="flex flex-col gap-2 flex-1 min-h-24 rounded-xl bg-gray-50 p-2">
+              <div className="flex flex-col gap-2 flex-1 min-h-24 rounded-xl bg-white/[0.03] p-2">
                 {stage.applications.map((app) => (
                   <CandidateCard
                     key={app.id}
@@ -160,7 +160,7 @@ export function PipelineBoard({ jobs, selectedJobId, stages }: Props) {
                 ))}
                 {stage.applications.length === 0 && (
                   <div className="flex-1 flex items-center justify-center">
-                    <p className="text-xs text-gray-400">Drop candidates here</p>
+                    <p className="text-xs text-white/40">Drop candidates here</p>
                   </div>
                 )}
               </div>
@@ -186,15 +186,15 @@ function CandidateCard({
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+      className="rounded-lg border border-white/[0.08] bg-[#1C2133] p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-300 text-xs font-semibold">
             {app.candidate.firstName[0]}{app.candidate.lastName[0]}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-white truncate">
               {app.candidate.firstName} {app.candidate.lastName}
             </p>
           </div>
@@ -207,7 +207,7 @@ function CandidateCard({
       </div>
 
       {app.candidate.currentTitle && (
-        <p className="text-xs text-gray-500 mt-1.5 truncate">
+        <p className="text-xs text-white/50 mt-1.5 truncate">
           {app.candidate.currentTitle}
           {app.candidate.currentCompany ? ` · ${app.candidate.currentCompany}` : ""}
         </p>
@@ -216,7 +216,7 @@ function CandidateCard({
       {app.candidate.skills.length > 0 && (
         <div className="flex gap-1 mt-2 flex-wrap">
           {app.candidate.skills.slice(0, 3).map((skill) => (
-            <span key={skill} className="rounded-full bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">
+            <span key={skill} className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-xs text-white/50">
               {skill}
             </span>
           ))}

@@ -65,18 +65,18 @@ export default function LinkedInPage() {
   };
 
   const inputClass =
-    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+    "w-full rounded-lg border border-white/15 px-3 py-2 text-sm text-white placeholder-white/20 bg-white/[0.04] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
   return (
     <div className="p-8 max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">LinkedIn Integration</h1>
-        <p className="text-sm text-gray-500 mt-1">Sync jobs and candidates with LinkedIn</p>
+        <h1 className="text-2xl font-bold text-white">LinkedIn Integration</h1>
+        <p className="text-sm text-white/50 mt-1">Sync jobs and candidates with LinkedIn</p>
       </div>
 
       {/* Partnership Notice */}
-      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 flex gap-3">
-        <InfoIcon className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+      <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4 flex gap-3">
+        <InfoIcon className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
         <div className="text-sm">
           <p className="font-semibold text-blue-900">LinkedIn Talent Solutions Required</p>
           <p className="text-blue-700 mt-1">
@@ -103,17 +103,17 @@ export default function LinkedInPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <BriefcaseIcon className="h-5 w-5 text-blue-600" />
+            <BriefcaseIcon className="h-5 w-5 text-blue-400" />
             <CardTitle>Post Job to LinkedIn</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-white/50">
             Publish a job from your ATS directly to LinkedIn Jobs.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Job ID (from your ATS)</label>
+              <label className="block text-sm font-medium text-white/80 mb-1">Job ID (from your ATS)</label>
               <input
                 className={inputClass}
                 placeholder="e.g. clxyz123..."
@@ -122,7 +122,7 @@ export default function LinkedInPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn Company ID</label>
+              <label className="block text-sm font-medium text-white/80 mb-1">LinkedIn Company ID</label>
               <input
                 className={inputClass}
                 placeholder="e.g. 12345678"
@@ -146,17 +146,17 @@ export default function LinkedInPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <UsersIcon className="h-5 w-5 text-blue-600" />
+            <UsersIcon className="h-5 w-5 text-blue-400" />
             <CardTitle>Import LinkedIn Applicants</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-white/50">
             Import all candidates who applied via LinkedIn Easy Apply into your pipeline.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ATS Job ID</label>
+              <label className="block text-sm font-medium text-white/80 mb-1">ATS Job ID</label>
               <input
                 className={inputClass}
                 placeholder="e.g. clxyz123..."
@@ -165,7 +165,7 @@ export default function LinkedInPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn Job ID</label>
+              <label className="block text-sm font-medium text-white/80 mb-1">LinkedIn Job ID</label>
               <input
                 className={inputClass}
                 placeholder="e.g. 3987654321"
@@ -191,15 +191,15 @@ export default function LinkedInPage() {
           <CardTitle>Easy Apply Webhook</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-white/50">
             Configure this webhook URL in your LinkedIn app to automatically receive new Easy Apply
             submissions in real-time.
           </p>
-          <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 font-mono text-sm text-gray-700">
+          <div className="rounded-lg bg-white/[0.03] border border-white/[0.08] px-4 py-3 font-mono text-sm text-white/80">
             {typeof window !== "undefined" ? window.location.origin : "https://yourapp.com"}
             /api/linkedin/webhook
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-white/40">
             Add this URL in LinkedIn Developer Portal → Your App → Webhooks
           </p>
         </CardContent>
@@ -209,13 +209,13 @@ export default function LinkedInPage() {
       {result && (
         <div
           className={`flex items-start gap-3 rounded-xl p-4 ${
-            result.success ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"
+            result.success ? "bg-green-500/10 border border-green-500/20" : "bg-red-500/10 border border-red-500/20"
           }`}
         >
           {result.success ? (
-            <CheckCircleIcon className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+            <CheckCircleIcon className="h-5 w-5 text-green-400 shrink-0 mt-0.5" />
           ) : (
-            <AlertCircleIcon className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+            <AlertCircleIcon className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
           )}
           <p className={`text-sm ${result.success ? "text-green-800" : "text-red-800"}`}>
             {result.success ? result.message : result.error}
