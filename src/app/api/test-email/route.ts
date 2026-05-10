@@ -1,33 +1,42 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 export async function GET() {
-  const hasKey = !!process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM ?? "onboarding@resend.dev";
-  const to = process.env.HR_EMAIL ?? "(not set — defaulting to hr@lobah.com)";
+  const user = process.env.BREVO_SMTP_USER;
+  const pass = process.env.BREVO_SMTP_PASS;
+  const from = process.env.EMAIL_FROM ?? "careers@lobah.com";
+  const to = process.env.HR_EMAIL ?? "hr@lobah.com";
 
-  if (!hasKey) {
+  if (!user || !pass) {
     return NextResponse.json({
-      error: "RESEND_API_KEY is not set in Vercel environment variables",
+      error: "BREVO_SMTP_USER or BREVO_SMTP_PASS not set in Vercel environment variables",
+      setup: "Go to brevo.com → SMTP & API → SMTP Keys to get your credentials",
       from,
       to,
     }, { status: 500 });
   }
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
-    const result = await resend.emails.send({
-      from,
-      to: process.env.HR_EMAIL ?? "hr@lobah.com",
-      subject: "Lobah ATS — email test",
-      html: "<p>If you received this, HR alert emails are working correctly.</p>",
+    const transport = nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      secure: false,
+      auth: { user, pass },
     });
+
+    const info = await transport.sendMail({
+      from,
+      to,
+      subject: "Lobah ATS — email test",
+      html: "<p>If you received this, emails are working correctly via Brevo SMTP.</p>",
+    });
+
     return NextResponse.json({
       success: true,
       from,
       to,
-      resendId: result.data?.id,
-      note: "Email was accepted by Resend. If not received, check spam or verify your domain at resend.com/domains",
+      messageId: info.messageId,
+      note: "Email sent via Brevo SMTP. Check your inbox (and spam folder).",
     });
   } catch (err) {
     return NextResponse.json({ error: String(err), from, to }, { status: 500 });
