@@ -37,11 +37,11 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center justify-between px-4 border-b border-theme-border">
         <Image
-          src="/lobah-logo.png"
+          src="/lobah-new-logo.png"
           alt="Lobah ATS"
           width={100}
           height={32}
-          className="h-7 w-auto object-contain brightness-0 dark:brightness-100"
+          className="h-7 w-auto object-contain dark:invert"
           priority
         />
         <button
