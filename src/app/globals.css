@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode for next-themes */
+@variant dark (&:where(.dark, .dark *));
+
+/* ─── Light theme ─── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --c-bg:        #f5f6fa;
+  --c-surface:   #ffffff;
+  --c-surface2:  #eef0f5;
+  --c-border:    rgba(0,0,0,0.07);
+  --c-border2:   rgba(0,0,0,0.10);
+  --c-border3:   rgba(0,0,0,0.15);
+  --c-text:      #111827;
+  --c-text90:    #1f2937;
+  --c-text80:    #374151;
+  --c-text70:    #4b5563;
+  --c-text60:    #6b7280;
+  --c-text50:    #6b7280;
+  --c-text40:    #9ca3af;
+  --c-text30:    #d1d5db;
+  --c-text20:    #e5e7eb;
+  --c-hover:     rgba(0,0,0,0.04);
+  --c-subtle:    rgba(0,0,0,0.04);
+  --c-subtle2:   rgba(0,0,0,0.07);
+  --c-faint:     rgba(0,0,0,0.02);
+  --c-input:     #ffffff;
 }
 
+/* ─── Dark theme ─── */
+.dark {
+  --c-bg:        #0D1117;
+  --c-surface:   #161B27;
+  --c-surface2:  #1C2133;
+  --c-border:    rgba(255,255,255,0.06);
+  --c-border2:   rgba(255,255,255,0.08);
+  --c-border3:   rgba(255,255,255,0.15);
+  --c-text:      #ffffff;
+  --c-text90:    rgba(255,255,255,0.90);
+  --c-text80:    rgba(255,255,255,0.80);
+  --c-text70:    rgba(255,255,255,0.70);
+  --c-text60:    rgba(255,255,255,0.60);
+  --c-text50:    rgba(255,255,255,0.50);
+  --c-text40:    rgba(255,255,255,0.40);
+  --c-text30:    rgba(255,255,255,0.30);
+  --c-text20:    rgba(255,255,255,0.20);
+  --c-hover:     rgba(255,255,255,0.05);
+  --c-subtle:    rgba(255,255,255,0.06);
+  --c-subtle2:   rgba(255,255,255,0.10);
+  --c-faint:     rgba(255,255,255,0.03);
+  --c-input:     rgba(255,255,255,0.04);
+}
+
+/* ─── Expose as Tailwind color utilities ─── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-theme-bg:       var(--c-bg);
+  --color-theme-surface:  var(--c-surface);
+  --color-theme-surface2: var(--c-surface2);
+  --color-theme-border:   var(--c-border);
+  --color-theme-border2:  var(--c-border2);
+  --color-theme-border3:  var(--c-border3);
+  --color-theme-text:     var(--c-text);
+  --color-theme-text90:   var(--c-text90);
+  --color-theme-text80:   var(--c-text80);
+  --color-theme-text70:   var(--c-text70);
+  --color-theme-text60:   var(--c-text60);
+  --color-theme-text50:   var(--c-text50);
+  --color-theme-text40:   var(--c-text40);
+  --color-theme-text30:   var(--c-text30);
+  --color-theme-text20:   var(--c-text20);
+  --color-theme-hover:    var(--c-hover);
+  --color-theme-subtle:   var(--c-subtle);
+  --color-theme-subtle2:  var(--c-subtle2);
+  --color-theme-faint:    var(--c-faint);
+  --color-theme-input:    var(--c-input);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--c-bg);
+  color: var(--c-text);
   font-family: Arial, Helvetica, sans-serif;
 }

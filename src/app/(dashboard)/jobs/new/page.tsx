@@ -63,17 +63,17 @@ export default function NewJobPage() {
   };
 
   const inputClass =
-    "w-full rounded-lg border border-white/15 px-3 py-2 text-sm text-white placeholder-white/20 bg-white/[0.04] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+    "w-full rounded-lg border border-theme-border3 px-3 py-2 text-sm text-theme-text placeholder-theme-text20 bg-theme-input focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
   return (
     <div className="p-8 max-w-3xl">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/jobs" className="text-white/40 hover:text-white/60 transition-colors">
+        <Link href="/jobs" className="text-theme-text40 hover:text-theme-text60 transition-colors">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Post New Job</h1>
-          <p className="text-sm text-white/50 mt-1">Use AI to enhance your job description</p>
+          <h1 className="text-2xl font-bold text-theme-text">Post New Job</h1>
+          <p className="text-sm text-theme-text50 mt-1">Use AI to enhance your job description</p>
         </div>
       </div>
 
@@ -84,7 +84,7 @@ export default function NewJobPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-1">Job Title *</label>
+              <label className="block text-sm font-medium text-theme-text80 mb-1">Job Title *</label>
               <input
                 required
                 className={inputClass}
@@ -95,7 +95,7 @@ export default function NewJobPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Department</label>
+                <label className="block text-sm font-medium text-theme-text80 mb-1">Department</label>
                 <input
                   className={inputClass}
                   placeholder="e.g. Engineering"
@@ -104,7 +104,7 @@ export default function NewJobPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Location</label>
+                <label className="block text-sm font-medium text-theme-text80 mb-1">Location</label>
                 <input
                   className={inputClass}
                   placeholder="e.g. San Francisco, CA or Remote"
@@ -115,7 +115,7 @@ export default function NewJobPage() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Job Type</label>
+                <label className="block text-sm font-medium text-theme-text80 mb-1">Job Type</label>
                 <select
                   className={inputClass}
                   value={form.type}
@@ -129,7 +129,7 @@ export default function NewJobPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Min Salary ($)</label>
+                <label className="block text-sm font-medium text-theme-text80 mb-1">Min Salary ($)</label>
                 <input
                   type="number"
                   className={inputClass}
@@ -139,7 +139,7 @@ export default function NewJobPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">Max Salary ($)</label>
+                <label className="block text-sm font-medium text-theme-text80 mb-1">Max Salary ($)</label>
                 <input
                   type="number"
                   className={inputClass}
@@ -171,7 +171,7 @@ export default function NewJobPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-1">
+              <label className="block text-sm font-medium text-theme-text80 mb-1">
                 Job Description *
               </label>
               <textarea
@@ -184,7 +184,7 @@ export default function NewJobPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-1">Requirements *</label>
+              <label className="block text-sm font-medium text-theme-text80 mb-1">Requirements *</label>
               <textarea
                 required
                 rows={6}

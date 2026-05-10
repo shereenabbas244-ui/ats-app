@@ -36,8 +36,8 @@ export default async function JobsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Jobs</h1>
-          <p className="text-sm text-white/50 mt-1">{jobs.length} total positions</p>
+          <h1 className="text-2xl font-bold text-theme-text">Jobs</h1>
+          <p className="text-sm text-theme-text50 mt-1">{jobs.length} total positions</p>
         </div>
         <Link href="/jobs/new">
           <Button>
@@ -51,9 +51,9 @@ export default async function JobsPage() {
         {jobs.length === 0 ? (
           <Card>
             <CardContent className="py-16 text-center">
-              <BriefcaseIcon className="h-12 w-12 text-white/30 mx-auto mb-4" />
-              <p className="text-white/50 font-medium">No jobs yet</p>
-              <p className="text-sm text-white/40 mt-1">Create your first job posting to start hiring.</p>
+              <BriefcaseIcon className="h-12 w-12 text-theme-text30 mx-auto mb-4" />
+              <p className="text-theme-text50 font-medium">No jobs yet</p>
+              <p className="text-sm text-theme-text40 mt-1">Create your first job posting to start hiring.</p>
               <Link href="/jobs/new" className="mt-4 inline-block">
                 <Button>
                   <PlusIcon className="h-4 w-4" />
@@ -74,7 +74,7 @@ export default async function JobsPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-white">{job.title}</h3>
+                          <h3 className="font-semibold text-theme-text">{job.title}</h3>
                           <Badge variant={statusVariant[job.status]}>{job.status}</Badge>
                           {job.linkedinJobId && (
                             <span title="Posted on LinkedIn">
@@ -82,7 +82,7 @@ export default async function JobsPage() {
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-white/50 flex-wrap">
+                        <div className="flex items-center gap-4 mt-1 text-sm text-theme-text50 flex-wrap">
                           {job.department && <span>{job.department}</span>}
                           {job.location && (
                             <span className="flex items-center gap-1">
@@ -98,13 +98,13 @@ export default async function JobsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <div className="flex items-center gap-1.5 text-sm text-white/60">
+                      <div className="flex items-center gap-1.5 text-sm text-theme-text60">
                         <UsersIcon className="h-4 w-4" />
                         <span className="font-medium">{job._count.applications}</span>
-                        <span className="text-white/40">applicants</span>
+                        <span className="text-theme-text40">applicants</span>
                       </div>
                       {job.salaryMin && (
-                        <span className="text-sm text-white/50">
+                        <span className="text-sm text-theme-text50">
                           ${(job.salaryMin / 1000).toFixed(0)}k
                           {job.salaryMax ? `–$${(job.salaryMax / 1000).toFixed(0)}k` : "+"}
                         </span>

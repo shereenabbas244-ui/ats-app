@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 
-const inputClass = "w-full rounded-lg border border-white/15 px-3 py-2 text-sm text-white placeholder-white/20 bg-white/[0.04] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
+const inputClass = "w-full rounded-lg border border-theme-border3 px-3 py-2 text-sm text-theme-text placeholder-theme-text20 bg-theme-input focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
 
 interface Job {
   id: string; title: string; department: string; location: string;
@@ -52,16 +52,16 @@ export default function EditJobPage() {
     }
   }
 
-  if (fetching) return <div className="p-8 text-white/40">Loading...</div>;
+  if (fetching) return <div className="p-8 text-theme-text40">Loading...</div>;
   if (!form) return null;
 
   return (
     <div className="p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href={`/jobs/${id}`} className="text-white/40 hover:text-white/60 transition-colors">
+        <Link href={`/jobs/${id}`} className="text-theme-text40 hover:text-theme-text60 transition-colors">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-white">Edit Job</h1>
+        <h1 className="text-2xl font-bold text-theme-text">Edit Job</h1>
       </div>
 
       <Card>
@@ -69,24 +69,24 @@ export default function EditJobPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-white/80 mb-1">Job Title *</label>
+              <label className="block text-xs font-medium text-theme-text80 mb-1">Job Title *</label>
               <input name="title" required value={form.title} onChange={handleChange} className={inputClass} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">Department</label>
+                <label className="block text-xs font-medium text-theme-text80 mb-1">Department</label>
                 <input name="department" value={form.department ?? ""} onChange={handleChange} className={inputClass} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">Location</label>
+                <label className="block text-xs font-medium text-theme-text80 mb-1">Location</label>
                 <input name="location" value={form.location ?? ""} onChange={handleChange} className={inputClass} />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">Type</label>
+                <label className="block text-xs font-medium text-theme-text80 mb-1">Type</label>
                 <select name="type" value={form.type} onChange={handleChange} className={inputClass}>
                   <option value="FULL_TIME">Full Time</option>
                   <option value="PART_TIME">Part Time</option>
@@ -96,7 +96,7 @@ export default function EditJobPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">Status</label>
+                <label className="block text-xs font-medium text-theme-text80 mb-1">Status</label>
                 <select name="status" value={form.status} onChange={handleChange} className={inputClass}>
                   <option value="DRAFT">Draft</option>
                   <option value="OPEN">Open</option>
@@ -108,26 +108,26 @@ export default function EditJobPage() {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">Min Salary</label>
+                <label className="block text-xs font-medium text-theme-text80 mb-1">Min Salary</label>
                 <input name="salaryMin" type="number" value={form.salaryMin ?? ""} onChange={handleChange} className={inputClass} placeholder="50000" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">Max Salary</label>
+                <label className="block text-xs font-medium text-theme-text80 mb-1">Max Salary</label>
                 <input name="salaryMax" type="number" value={form.salaryMax ?? ""} onChange={handleChange} className={inputClass} placeholder="80000" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">Currency</label>
+                <label className="block text-xs font-medium text-theme-text80 mb-1">Currency</label>
                 <input name="salaryCurrency" value={form.salaryCurrency ?? "USD"} onChange={handleChange} className={inputClass} placeholder="USD" />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-white/80 mb-1">Description *</label>
+              <label className="block text-xs font-medium text-theme-text80 mb-1">Description *</label>
               <textarea name="description" required value={form.description} onChange={handleChange} rows={6} className={inputClass} />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-white/80 mb-1">Requirements *</label>
+              <label className="block text-xs font-medium text-theme-text80 mb-1">Requirements *</label>
               <textarea name="requirements" required value={form.requirements} onChange={handleChange} rows={4} className={inputClass} />
             </div>
 
