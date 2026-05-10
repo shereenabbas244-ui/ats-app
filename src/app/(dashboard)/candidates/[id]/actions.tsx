@@ -31,7 +31,7 @@ export function CandidateActions({ applicationId, currentStatus }: CandidateActi
           <button
             onClick={() => updateStatus("HIRED")}
             disabled={loading}
-            className="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-2 py-0.5 rounded-full transition-colors disabled:opacity-50"
+            className="text-xs bg-green-100 text-green-300 hover:bg-green-200 px-2 py-0.5 rounded-full transition-colors disabled:opacity-50"
           >
             Hire
           </button>
@@ -56,7 +56,7 @@ export function CandidateActions({ applicationId, currentStatus }: CandidateActi
           <button
             onClick={() => updateStatus("ACTIVE")}
             disabled={loading}
-            className="text-xs bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-2 py-0.5 rounded-full transition-colors disabled:opacity-50"
+            className="text-xs bg-indigo-100 text-indigo-300 hover:bg-indigo-200 px-2 py-0.5 rounded-full transition-colors disabled:opacity-50"
           >
             Reactivate
           </button>

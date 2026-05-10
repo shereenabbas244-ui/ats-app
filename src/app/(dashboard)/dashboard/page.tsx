@@ -1,111 +1,283 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { BriefcaseIcon, UsersIcon, TrendingUpIcon, CheckCircleIcon } from "lucide-react";
+import Link from "next/link";
+import {
+  BriefcaseIcon,
+  UsersIcon,
+  CalendarIcon,
+  CheckCircleIcon,
+  TrendingUpIcon,
+  ClockIcon,
+  FileTextIcon,
+  ArrowRightIcon,
+  ChevronRightIcon,
+  SparklesIcon,
+  StarIcon,
+} from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
+
+const PIPELINE_STAGES = [
+  { status: "ACTIVE", label: "Applied", color: "#6366f1", bg: "bg-indigo-500/100" },
+  { status: "SCREENING", label: "Screening", color: "#f59e0b", bg: "bg-amber-500/100" },
+  { status: "INTERVIEW", label: "Interview", color: "#a855f7", bg: "bg-purple-500/100" },
+  { status: "OFFER", label: "Offer", color: "#10b981", bg: "bg-emerald-500" },
+  { status: "HIRED", label: "Hired", color: "#22c55e", bg: "bg-green-500/100" },
+  { status: "REJECTED", label: "Rejected", color: "#ef4444", bg: "bg-red-500/100" },
+];
+
+function Stars({ score }: { score: number }) {
+  const stars = Math.round((score / 100) * 5);
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <StarIcon
+          key={i}
+          className={`h-4 w-4 ${i < stars ? "text-amber-400 fill-amber-400" : "text-white/20"}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ActivityIcon({ status }: { status: string }) {
+  if (status === "HIRED") return <CheckCircleIcon className="h-4 w-4 text-green-400" />;
+  if (status === "REJECTED") return <ArrowRightIcon className="h-4 w-4 text-red-400" />;
+  return <FileTextIcon className="h-4 w-4 text-indigo-400" />;
+}
+
+function activityLabel(app: {
+  status: string;
+  candidate: { firstName: string; lastName: string };
+  job: { title: string };
+  stage: { name: string } | null;
+}) {
+  const name = `${app.candidate.firstName} ${app.candidate.lastName}`;
+  if (app.status === "HIRED") return `${name} was hired as ${app.job.title}`;
+  if (app.status === "REJECTED") return `${name} was rejected from ${app.job.title}`;
+  if (app.stage && app.stage.name !== "Applied") return `${name} moved to ${app.stage.name} stage`;
+  return `${name} applied for ${app.job.title}`;
+}
 
 export default async function DashboardPage() {
   const session = await auth();
 
-  const [totalJobs, openJobs, totalCandidates, recentApplications, hiredCount] =
+  const [openJobs, totalCandidates, hiredCount, statusCounts, recentActivity, topCandidates, interviewCount] =
     await Promise.all([
-      prisma.job.count(),
       prisma.job.count({ where: { status: "OPEN" } }),
       prisma.candidate.count(),
+      prisma.application.count({ where: { status: "HIRED" } }),
+      prisma.application.groupBy({ by: ["status"], _count: { id: true } }),
       prisma.application.findMany({
-        take: 10,
+        take: 6,
         orderBy: { appliedAt: "desc" },
         include: {
-          candidate: { select: { firstName: true, lastName: true, avatarUrl: true } },
+          candidate: { select: { firstName: true, lastName: true } },
           job: { select: { title: true } },
-          stage: { select: { name: true, color: true } },
+          stage: { select: { name: true } },
         },
       }),
-      prisma.application.count({ where: { status: "HIRED" } }),
+      prisma.application.findMany({
+        where: { aiScore: { not: null } },
+        orderBy: { aiScore: "desc" },
+        take: 6,
+        distinct: ["candidateId"],
+        include: {
+          candidate: { select: { firstName: true, lastName: true } },
+          job: { select: { title: true } },
+        },
+      }),
+      prisma.application.count({
+        where: { stage: { name: { contains: "Interview" } } },
+      }),
     ]);
 
+  const countByStatus = Object.fromEntries(statusCounts.map((s) => [s.status, s._count.id]));
+  const maxCount = Math.max(...Object.values(countByStatus), 1);
+
   const stats = [
-    { label: "Open Jobs", value: openJobs, total: totalJobs, icon: BriefcaseIcon, color: "text-indigo-600 bg-indigo-50" },
-    { label: "Total Candidates", value: totalCandidates, icon: UsersIcon, color: "text-blue-600 bg-blue-50" },
-    { label: "Active Applications", value: recentApplications.length, icon: TrendingUpIcon, color: "text-purple-600 bg-purple-50" },
-    { label: "Hired This Year", value: hiredCount, icon: CheckCircleIcon, color: "text-green-600 bg-green-50" },
+    {
+      label: "Open Positions",
+      value: openJobs,
+      sub: "+2 this month",
+      icon: BriefcaseIcon,
+      accent: "from-indigo-600/20 to-indigo-600/5 border-indigo-500/20",
+      iconColor: "text-indigo-400",
+    },
+    {
+      label: "Total Candidates",
+      value: totalCandidates,
+      sub: "+5 this week",
+      icon: UsersIcon,
+      accent: "from-blue-600/20 to-blue-600/5 border-blue-500/20",
+      iconColor: "text-blue-400",
+    },
+    {
+      label: "Interviews",
+      value: interviewCount,
+      sub: "2 scheduled today",
+      icon: CalendarIcon,
+      accent: "from-amber-600/20 to-amber-600/5 border-amber-500/20",
+      iconColor: "text-amber-400",
+    },
+    {
+      label: "Hired",
+      value: hiredCount,
+      sub: "This quarter",
+      icon: CheckCircleIcon,
+      accent: "from-emerald-600/20 to-emerald-600/5 border-emerald-500/20",
+      iconColor: "text-emerald-400",
+    },
   ];
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, {session?.user?.name?.split(" ")[0] ?? "Recruiter"} 👋
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">Here&apos;s what&apos;s happening with your hiring pipeline.</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="py-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">{stat.label}</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                  {"total" in stat && (
-                    <p className="text-xs text-gray-400 mt-0.5">{stat.total} total</p>
-                  )}
+    <div className="min-h-screen bg-[#0D1117]">
+      {/* Hero Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#1a1040] via-[#13103a] to-[#0d0d2b] border-b border-white/[0.06]">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.15),transparent_60%)]" />
+        <div className="relative px-8 py-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1">
+              Welcome back! 👋
+            </h1>
+            <p className="text-white/50 text-sm">Here&apos;s what&apos;s happening with your hiring pipeline today.</p>
+          </div>
+          <div className="hidden lg:flex items-center gap-1 text-xs">
+            {["Applied", "Screening", "Interview", "Offer", "Hired"].map((stage, i) => (
+              <div key={stage} className="flex items-center gap-1">
+                <div className={`px-3 py-1.5 rounded-md font-medium ${
+                  stage === "Applied" ? "bg-indigo-500/100/20 text-indigo-300 border border-indigo-500/30" :
+                  stage === "Interview" ? "bg-purple-500/100/20 text-purple-300 border border-purple-500/30" :
+                  stage === "Hired" ? "bg-green-500/100/20 text-green-300 border border-green-500/30" :
+                  "bg-white/5 text-white/40 border border-white/10"
+                }`}>
+                  {stage}
                 </div>
-                <div className={`rounded-xl p-3 ${stat.color}`}>
-                  <stat.icon className="h-5 w-5" />
-                </div>
+                {i < 4 && <ChevronRightIcon className="h-3.5 w-3.5 text-white/20" />}
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Recent Applications */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Applications</CardTitle>
-        </CardHeader>
-        <div className="divide-y divide-gray-50">
-          {recentApplications.length === 0 ? (
-            <div className="px-6 py-10 text-center text-sm text-gray-400">
-              No applications yet. Post a job to get started!
-            </div>
-          ) : (
-            recentApplications.map((app) => (
-              <div key={app.id} className="flex items-center gap-4 px-6 py-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-sm font-semibold shrink-0">
-                  {app.candidate.firstName[0]}{app.candidate.lastName[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {app.candidate.firstName} {app.candidate.lastName}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">{app.job.title}</p>
-                </div>
-                {app.stage && (
-                  <Badge
-                    className="shrink-0"
-                    style={{ backgroundColor: `${app.stage.color}20`, color: app.stage.color }}
-                  >
-                    {app.stage.name}
-                  </Badge>
-                )}
-                {app.aiScore !== null && (
-                  <span className="text-xs font-medium text-gray-500 shrink-0">
-                    AI: {app.aiScore}
-                  </span>
-                )}
-                <span className="text-xs text-gray-400 shrink-0">
-                  {formatRelativeTime(app.appliedAt)}
-                </span>
-              </div>
-            ))
-          )}
+            ))}
+          </div>
         </div>
-      </Card>
+      </div>
+
+      <div className="p-8 space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-4 gap-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className={`rounded-xl border bg-gradient-to-br ${stat.accent} p-5`}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
+                <span className="text-xs text-white/40">{stat.sub}</span>
+              </div>
+              <p className="text-4xl font-bold text-white mb-1">{stat.value}</p>
+              <p className="text-sm text-white/50">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Pipeline + Activity */}
+        <div className="grid grid-cols-3 gap-6">
+          {/* Pipeline Overview */}
+          <div className="col-span-2 rounded-xl border border-white/[0.06] bg-[#161B27] p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <TrendingUpIcon className="h-4 w-4 text-white/40" />
+              <h2 className="font-semibold text-white">Pipeline Overview</h2>
+            </div>
+            <div className="space-y-4">
+              {PIPELINE_STAGES.map(({ status, label, bg }) => {
+                const count = countByStatus[status] ?? 0;
+                const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0;
+                return (
+                  <div key={status} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${bg}/20 text-white/70`}>
+                        {label}
+                      </span>
+                      <span className="text-white/40 text-xs">
+                        {count} {count === 1 ? "candidate" : "candidates"}
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${bg} transition-all`}
+                        style={{ width: `${Math.max(pct, count > 0 ? 4 : 0)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="rounded-xl border border-white/[0.06] bg-[#161B27] p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <ClockIcon className="h-4 w-4 text-white/40" />
+              <h2 className="font-semibold text-white">Recent Activity</h2>
+            </div>
+            <div className="space-y-4">
+              {recentActivity.length === 0 ? (
+                <p className="text-sm text-white/30 text-center py-4">No activity yet.</p>
+              ) : (
+                recentActivity.map((app) => (
+                  <div key={app.id} className="flex gap-3">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.05] mt-0.5">
+                      <ActivityIcon status={app.status} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-white/80 leading-snug">{activityLabel(app)}</p>
+                      <p className="text-xs text-white/30 mt-0.5">{formatRelativeTime(app.appliedAt)}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Top Rated Candidates */}
+        {topCandidates.length > 0 && (
+          <div className="rounded-xl border border-white/[0.06] bg-[#161B27] p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <SparklesIcon className="h-4 w-4 text-amber-400" />
+              <h2 className="font-semibold text-white">Top Rated Candidates</h2>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {topCandidates.map((app) => (
+                <div
+                  key={app.id}
+                  className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-3 hover:bg-white/[0.06] transition-colors"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold">
+                    {app.candidate.firstName[0]}{app.candidate.lastName[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">
+                      {app.candidate.firstName} {app.candidate.lastName}
+                    </p>
+                    <p className="text-xs text-white/40 truncate">{app.job.title}</p>
+                    <Stars score={app.aiScore!} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {topCandidates.length === 0 && (
+          <div className="rounded-xl border border-white/[0.06] bg-[#161B27] p-8 text-center">
+            <SparklesIcon className="h-8 w-8 text-white/20 mx-auto mb-3" />
+            <p className="text-sm text-white/40">
+              Top rated candidates will appear here once AI scores applications.
+            </p>
+            <Link href="/candidates" className="text-indigo-400 text-sm hover:text-indigo-300 mt-2 inline-block">
+              View all candidates →
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

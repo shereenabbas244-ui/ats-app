@@ -8,12 +8,12 @@ interface BadgeProps {
 }
 
 const variants = {
-  default: "bg-indigo-100 text-indigo-700",
-  secondary: "bg-gray-100 text-gray-700",
-  success: "bg-green-100 text-green-700",
-  warning: "bg-yellow-100 text-yellow-700",
-  danger: "bg-red-100 text-red-700",
-  outline: "border border-gray-200 text-gray-600",
+  default: "bg-indigo-500/20 text-indigo-300",
+  secondary: "bg-white/10 text-white/60",
+  success: "bg-green-500/20 text-green-300",
+  warning: "bg-amber-500/20 text-amber-300",
+  danger: "bg-red-500/20 text-red-300",
+  outline: "border border-white/20 text-white/60",
 };
 
 export function Badge({ children, variant = "default", className, style }: BadgeProps) {

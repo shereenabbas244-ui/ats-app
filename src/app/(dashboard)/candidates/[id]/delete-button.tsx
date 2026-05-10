@@ -25,7 +25,7 @@ export function DeleteCandidateButton({
   if (confirming) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">Delete {candidateName}?</span>
+        <span className="text-sm text-white/50">Delete {candidateName}?</span>
         <button
           onClick={handleDelete}
           disabled={loading}
@@ -35,7 +35,7 @@ export function DeleteCandidateButton({
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="text-xs border border-gray-200 text-gray-600 hover:bg-gray-50 px-3 py-1.5 rounded-lg font-medium transition-colors"
+          className="text-xs border border-white/[0.08] text-white/60 hover:bg-white/[0.03] px-3 py-1.5 rounded-lg font-medium transition-colors"
         >
           Cancel
         </button>
@@ -46,7 +46,7 @@ export function DeleteCandidateButton({
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition-colors"
+      className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 border border-red-500/20 hover:border-red-400 px-3 py-1.5 rounded-lg transition-colors"
     >
       <Trash2Icon className="h-3.5 w-3.5" />
       Delete candidate

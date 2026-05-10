@@ -36,10 +36,10 @@ export function getInitials(name: string): string {
 }
 
 export function scoreToColor(score: number): string {
-  if (score >= 80) return "text-green-600 bg-green-50";
-  if (score >= 60) return "text-yellow-600 bg-yellow-50";
-  if (score >= 40) return "text-orange-600 bg-orange-50";
-  return "text-red-600 bg-red-50";
+  if (score >= 80) return "text-green-400";
+  if (score >= 60) return "text-yellow-400";
+  if (score >= 40) return "text-orange-400";
+  return "text-red-400";
 }
 
 export function scoreToLabel(score: number): string {

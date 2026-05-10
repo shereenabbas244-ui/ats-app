@@ -30,8 +30,8 @@ const sourceVariant: Record<string, string> = {
   LINKEDIN: "bg-blue-100 text-blue-700",
   LINKEDIN_EASY_APPLY: "bg-blue-100 text-blue-700",
   RESUME_UPLOAD: "bg-purple-100 text-purple-700",
-  MANUAL: "bg-gray-100 text-gray-700",
-  REFERRAL: "bg-green-100 text-green-700",
+  MANUAL: "bg-[#1C2133]/[0.06] text-white/80",
+  REFERRAL: "bg-green-100 text-green-300",
   JOB_BOARD: "bg-orange-100 text-orange-700",
 };
 
@@ -101,18 +101,18 @@ export function CandidatesClient({ candidates }: { candidates: Candidate[] }) {
       {/* Search + actions bar */}
       <div className="flex gap-3 mb-6">
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
           <input
             type="text"
             placeholder="Search by name, email, title, skills..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-white/[0.08] text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
         </div>
         <button
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-white/[0.08] text-sm font-medium text-white/80 hover:bg-[#1C2133]/[0.03] transition-colors"
         >
           <DownloadIcon className="h-4 w-4" />
           Export CSV
@@ -126,9 +126,9 @@ export function CandidatesClient({ candidates }: { candidates: Candidate[] }) {
             type="checkbox"
             checked={allFilteredSelected}
             onChange={toggleAll}
-            className="h-4 w-4 rounded border-gray-300 text-indigo-600 cursor-pointer"
+            className="h-4 w-4 rounded border-white/15 text-indigo-400 cursor-pointer"
           />
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-white/50">
             {selected.size > 0 ? `${selected.size} selected` : `${filtered.length} candidate${filtered.length !== 1 ? "s" : ""}`}
           </p>
         </div>
@@ -136,7 +136,7 @@ export function CandidatesClient({ candidates }: { candidates: Candidate[] }) {
         {selected.size > 0 && (
           confirmBulk ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Delete {selected.size} candidate{selected.size !== 1 ? "s" : ""}?</span>
+              <span className="text-sm text-white/50">Delete {selected.size} candidate{selected.size !== 1 ? "s" : ""}?</span>
               <button
                 onClick={deleteSelected}
                 disabled={deleting}
@@ -146,7 +146,7 @@ export function CandidatesClient({ candidates }: { candidates: Candidate[] }) {
               </button>
               <button
                 onClick={() => setConfirmBulk(false)}
-                className="text-xs border border-gray-200 text-gray-600 hover:bg-gray-50 px-3 py-1.5 rounded-lg font-medium transition-colors"
+                className="text-xs border border-white/[0.08] text-white/60 hover:bg-[#1C2133]/[0.03] px-3 py-1.5 rounded-lg font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -154,7 +154,7 @@ export function CandidatesClient({ candidates }: { candidates: Candidate[] }) {
           ) : (
             <button
               onClick={() => setConfirmBulk(true)}
-              className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 border border-red-500/20 hover:border-red-400 px-3 py-1.5 rounded-lg transition-colors"
             >
               <Trash2Icon className="h-4 w-4" />
               Delete {selected.size} selected
@@ -165,8 +165,8 @@ export function CandidatesClient({ candidates }: { candidates: Candidate[] }) {
 
       <div className="grid gap-3">
         {filtered.length === 0 ? (
-          <div className="py-12 text-center border border-gray-100 rounded-xl">
-            <p className="text-gray-500">No candidates match your search.</p>
+          <div className="py-12 text-center border border-white/[0.06] rounded-xl">
+            <p className="text-white/50">No candidates match your search.</p>
           </div>
         ) : (
           filtered.map((candidate) => (
@@ -176,24 +176,24 @@ export function CandidatesClient({ candidates }: { candidates: Candidate[] }) {
                 checked={selected.has(candidate.id)}
                 onChange={() => toggleOne(candidate.id)}
                 onClick={(e) => e.stopPropagation()}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 cursor-pointer shrink-0"
+                className="h-4 w-4 rounded border-white/15 text-indigo-400 cursor-pointer shrink-0"
               />
               <Link href={`/candidates/${candidate.id}`} className="flex-1 min-w-0">
-                <div className="hover:shadow-md transition-shadow bg-white border border-gray-100 rounded-xl p-4">
+                <div className="hover:shadow-md transition-shadow bg-[#1C2133] border border-white/[0.06] rounded-xl p-4">
                   <div className="flex items-center gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-sm font-semibold">
                       {candidate.firstName[0]}{candidate.lastName[0]}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-semibold text-gray-900 text-sm">
+                        <p className="font-semibold text-white text-sm">
                           {candidate.firstName} {candidate.lastName}
                         </p>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${sourceVariant[candidate.source] ?? "bg-gray-100 text-gray-700"}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${sourceVariant[candidate.source] ?? "bg-[#1C2133]/[0.06] text-white/80"}`}>
                           {candidate.source.replace(/_/g, " ")}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-500 flex-wrap">
+                      <div className="flex items-center gap-3 mt-0.5 text-xs text-white/50 flex-wrap">
                         {candidate.currentTitle && (
                           <span className="flex items-center gap-1">
                             <BriefcaseIcon className="h-3 w-3" />
@@ -210,21 +210,21 @@ export function CandidatesClient({ candidates }: { candidates: Candidate[] }) {
                       {candidate.skills.length > 0 && (
                         <div className="flex gap-1 mt-1.5 flex-wrap">
                           {candidate.skills.slice(0, 5).map((skill) => (
-                            <span key={skill} className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{skill}</span>
+                            <span key={skill} className="rounded-full bg-[#1C2133]/[0.06] px-2 py-0.5 text-xs text-white/60">{skill}</span>
                           ))}
                           {candidate.skills.length > 5 && (
-                            <span className="text-xs text-gray-400">+{candidate.skills.length - 5}</span>
+                            <span className="text-xs text-white/40">+{candidate.skills.length - 5}</span>
                           )}
                         </div>
                       )}
                     </div>
                     <div className="shrink-0 text-right">
-                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                      <div className="flex items-center gap-1 text-sm text-white/60">
                         <BriefcaseIcon className="h-3.5 w-3.5" />
                         <span>{candidate._count.applications} jobs</span>
                       </div>
                       {candidate.applications.length > 0 && (
-                        <p className="text-xs text-gray-400 mt-0.5">{candidate.applications[0].job.title}</p>
+                        <p className="text-xs text-white/40 mt-0.5">{candidate.applications[0].job.title}</p>
                       )}
                     </div>
                     {candidate.linkedinUrl && (

@@ -60,26 +60,26 @@ export default async function JobDetailPage({
   return (
     <div className="p-8">
       <div className="flex items-start gap-4 mb-8">
-        <Link href="/jobs" className="text-gray-400 hover:text-gray-600 mt-1 transition-colors">
+        <Link href="/jobs" className="text-white/40 hover:text-white/60 mt-1 transition-colors">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
+            <h1 className="text-2xl font-bold text-white">{job.title}</h1>
             <Badge variant={statusVariant[job.status]}>{job.status}</Badge>
             {job.linkedinJobId && (
               <a
                 href={job.linkedinPostUrl ?? "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                className="flex items-center gap-1 text-sm text-blue-400 hover:underline"
               >
                 <LinkedinIcon className="h-4 w-4" />
                 View on LinkedIn
               </a>
             )}
           </div>
-          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 flex-wrap">
+          <div className="flex items-center gap-4 mt-2 text-sm text-white/50 flex-wrap">
             {job.department && <span>{job.department}</span>}
             {job.location && (
               <span className="flex items-center gap-1">
@@ -119,19 +119,19 @@ export default async function JobDetailPage({
         {/* Left: Candidates */}
         <div className="col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">
+            <h2 className="font-semibold text-white">
               Candidates ({job.applications.length})
             </h2>
             {avgScore !== null && (
-              <span className="text-sm text-gray-500">Avg AI Score: <strong>{avgScore}</strong></span>
+              <span className="text-sm text-white/50">Avg AI Score: <strong>{avgScore}</strong></span>
             )}
           </div>
 
           {job.applications.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <UsersIcon className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">No candidates yet</p>
+                <UsersIcon className="h-10 w-10 text-white/30 mx-auto mb-3" />
+                <p className="text-white/50 text-sm">No candidates yet</p>
               </CardContent>
             </Card>
           ) : (
@@ -139,14 +139,14 @@ export default async function JobDetailPage({
               <Card key={app.id}>
                 <CardContent className="py-3">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-sm font-semibold">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-300 text-sm font-semibold">
                       {app.candidate.firstName[0]}{app.candidate.lastName[0]}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 text-sm">
+                      <p className="font-medium text-white text-sm">
                         {app.candidate.firstName} {app.candidate.lastName}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-white/50">
                         {app.candidate.currentTitle ?? app.candidate.email}
                       </p>
                     </div>
@@ -183,7 +183,7 @@ export default async function JobDetailPage({
                     className="h-2.5 w-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: stage.color }}
                   />
-                  <span className="text-sm text-gray-700">{stage.name}</span>
+                  <span className="text-sm text-white/80">{stage.name}</span>
                 </div>
               ))}
             </CardContent>
@@ -193,11 +193,11 @@ export default async function JobDetailPage({
             <Card>
               <CardHeader><CardTitle>Compensation</CardTitle></CardHeader>
               <CardContent>
-                <p className="text-lg font-semibold text-gray-900">
+                <p className="text-lg font-semibold text-white">
                   ${job.salaryMin.toLocaleString()}
                   {job.salaryMax ? ` – $${job.salaryMax.toLocaleString()}` : "+"}
                 </p>
-                <p className="text-sm text-gray-500">{job.salaryCurrency} / year</p>
+                <p className="text-sm text-white/50">{job.salaryCurrency} / year</p>
               </CardContent>
             </Card>
           )}
@@ -205,7 +205,7 @@ export default async function JobDetailPage({
           <Card>
             <CardHeader><CardTitle>Description</CardTitle></CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 whitespace-pre-wrap line-clamp-6">
+              <p className="text-sm text-white/60 whitespace-pre-wrap line-clamp-6">
                 {job.description}
               </p>
             </CardContent>
