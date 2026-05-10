@@ -239,7 +239,7 @@ export default function AIPage() {
                       </div>
                       <div className="h-1.5 rounded-full bg-theme-subtle">
                         <div
-                          className="h-1.5 rounded-full bg-indigo-500/100 transition-all"
+                          className="h-1.5 rounded-full bg-indigo-500 transition-all"
                           style={{ width: `${val}%` }}
                         />
                       </div>

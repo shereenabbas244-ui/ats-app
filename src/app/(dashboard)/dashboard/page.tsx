@@ -17,12 +17,12 @@ import {
 import { formatRelativeTime } from "@/lib/utils";
 
 const PIPELINE_STAGES = [
-  { status: "ACTIVE", label: "Applied", color: "#6366f1", bg: "bg-indigo-500/100" },
-  { status: "SCREENING", label: "Screening", color: "#f59e0b", bg: "bg-amber-500/100" },
-  { status: "INTERVIEW", label: "Interview", color: "#a855f7", bg: "bg-purple-500/100" },
+  { status: "ACTIVE", label: "Applied", color: "#6366f1", bg: "bg-indigo-500" },
+  { status: "SCREENING", label: "Screening", color: "#f59e0b", bg: "bg-amber-500" },
+  { status: "INTERVIEW", label: "Interview", color: "#a855f7", bg: "bg-purple-500" },
   { status: "OFFER", label: "Offer", color: "#10b981", bg: "bg-emerald-500" },
-  { status: "HIRED", label: "Hired", color: "#22c55e", bg: "bg-green-500/100" },
-  { status: "REJECTED", label: "Rejected", color: "#ef4444", bg: "bg-red-500/100" },
+  { status: "HIRED", label: "Hired", color: "#22c55e", bg: "bg-green-500" },
+  { status: "REJECTED", label: "Rejected", color: "#ef4444", bg: "bg-red-500" },
 ];
 
 function Stars({ score }: { score: number }) {
@@ -132,27 +132,27 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-theme-bg">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#1a1040] via-[#13103a] to-[#0d0d2b] border-b border-theme-border">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#1a1040] via-[#13103a] to-[#0d0d2b] border-b border-white/[0.06]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.15),transparent_60%)]" />
         <div className="relative px-8 py-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-theme-text mb-1">
+            <h1 className="text-3xl font-bold text-white mb-1">
               Welcome back! 👋
             </h1>
-            <p className="text-theme-text50 text-sm">Here&apos;s what&apos;s happening with your hiring pipeline today.</p>
+            <p className="text-white/50 text-sm">Here&apos;s what&apos;s happening with your hiring pipeline today.</p>
           </div>
           <div className="hidden lg:flex items-center gap-1 text-xs">
             {["Applied", "Screening", "Interview", "Offer", "Hired"].map((stage, i) => (
               <div key={stage} className="flex items-center gap-1">
                 <div className={`px-3 py-1.5 rounded-md font-medium ${
-                  stage === "Applied" ? "bg-indigo-500/100/20 text-indigo-300 border border-indigo-500/30" :
-                  stage === "Interview" ? "bg-purple-500/100/20 text-purple-300 border border-purple-500/30" :
-                  stage === "Hired" ? "bg-green-500/100/20 text-green-300 border border-green-500/30" :
-                  "bg-theme-faint text-theme-text40 border border-theme-border2"
+                  stage === "Applied" ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" :
+                  stage === "Interview" ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" :
+                  stage === "Hired" ? "bg-green-500/20 text-green-300 border border-green-500/30" :
+                  "bg-white/5 text-white/40 border border-white/10"
                 }`}>
                   {stage}
                 </div>
-                {i < 4 && <ChevronRightIcon className="h-3.5 w-3.5 text-theme-text20" />}
+                {i < 4 && <ChevronRightIcon className="h-3.5 w-3.5 text-white/20" />}
               </div>
             ))}
           </div>

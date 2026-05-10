@@ -41,10 +41,7 @@ export function Sidebar() {
           alt="Lobah ATS"
           width={100}
           height={32}
-          className={cn(
-            "h-7 w-auto object-contain",
-            theme === "light" ? "brightness-0" : ""
-          )}
+          className="h-7 w-auto object-contain brightness-0 dark:brightness-100"
           priority
         />
         <button
