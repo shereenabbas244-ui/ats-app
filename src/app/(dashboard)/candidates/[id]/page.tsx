@@ -1,29 +1,18 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import {
   ArrowLeftIcon,
-  MapPinIcon,
-  BriefcaseIcon,
   MailIcon,
   PhoneIcon,
-  LinkedinIcon,
+  FileTextIcon,
   CalendarIcon,
-  SparklesIcon,
+  BriefcaseIcon,
 } from "lucide-react";
-import { formatDate, scoreToColor, scoreToLabel } from "@/lib/utils";
-import { CandidateActions } from "./actions";
-import { DeleteCandidateButton } from "./delete-button";
+import { formatDate } from "@/lib/utils";
+import { CandidateDetailClient } from "./CandidateDetailClient";
 
-const statusVariant: Record<string, "default" | "success" | "warning" | "secondary" | "danger"> = {
-  ACTIVE: "success",
-  WITHDRAWN: "secondary",
-  REJECTED: "danger",
-  HIRED: "default",
-  ON_HOLD: "warning",
-};
+const PIPELINE_STEPS = ["Applied", "Screening", "Interview", "Offer", "Hired"];
 
 export default async function CandidateDetailPage({
   params,
@@ -37,11 +26,11 @@ export default async function CandidateDetailPage({
     include: {
       applications: {
         include: {
-          job: { select: { id: true, title: true, department: true } },
-          stage: { select: { name: true, color: true } },
-          notes: { orderBy: { createdAt: "desc" }, take: 3, include: { author: { select: { name: true } } } },
+          job: { select: { id: true, title: true, department: true, location: true } },
+          stage: { select: { id: true, name: true, color: true } },
         },
         orderBy: { appliedAt: "desc" },
+        take: 1,
       },
       notes: {
         orderBy: { createdAt: "desc" },
@@ -52,195 +41,218 @@ export default async function CandidateDetailPage({
 
   if (!candidate) notFound();
 
+  const app = candidate.applications[0] ?? null;
+  const stageName = app?.stage?.name ?? "Applied";
+  const stepIndex = PIPELINE_STEPS.findIndex(
+    (s) => s.toLowerCase() === stageName.toLowerCase()
+  );
+  const currentStep = stepIndex >= 0 ? stepIndex : 0;
+
+  // Resume download URL
+  let resumeHref: string | null = null;
+  let resumeFilename: string | null = null;
+  if (candidate.resumeText?.startsWith("RESUME_FILE:")) {
+    const parts = candidate.resumeText.split(":");
+    resumeFilename = parts[1] ?? "resume";
+    const base64 = parts.slice(2).join(":");
+    const ext = resumeFilename.split(".").pop()?.toLowerCase();
+    const mime =
+      ext === "pdf"
+        ? "application/pdf"
+        : ext === "docx"
+        ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        : "application/msword";
+    resumeHref = `data:${mime};base64,${base64}`;
+  }
+
+  const existingNotes = candidate.notes.map((n) => ({
+    id: n.id,
+    content: n.content,
+    authorName: n.author.name ?? "Unknown",
+    createdAt: n.createdAt.toISOString(),
+  }));
+
   return (
-    <div className="p-8 max-w-5xl">
-      <div className="flex items-center gap-3 mb-8">
-        <Link href="/candidates" className="text-theme-text40 hover:text-theme-text60 transition-colors">
-          <ArrowLeftIcon className="h-5 w-5" />
+    <div className="min-h-screen bg-theme-bg">
+      {/* Back link */}
+      <div className="px-8 pt-6 pb-0">
+        <Link
+          href="/candidates"
+          className="inline-flex items-center gap-1.5 text-sm text-theme-text50 hover:text-theme-text transition-colors"
+        >
+          <ArrowLeftIcon className="h-4 w-4" />
+          Back to Candidates
         </Link>
-        <h1 className="text-2xl font-bold text-theme-text">
-          {candidate.firstName} {candidate.lastName}
-        </h1>
-        <Badge variant="outline">{candidate.source.replace(/_/g, " ")}</Badge>
-        <div className="ml-auto">
-          <DeleteCandidateButton candidateId={candidate.id} candidateName={`${candidate.firstName} ${candidate.lastName}`} />
+      </div>
+
+      {/* Header */}
+      <div className="px-8 pt-6 pb-6 flex items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-xl font-bold">
+            {candidate.firstName[0]}{candidate.lastName[0]}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-theme-text">
+              {candidate.firstName} {candidate.lastName}
+            </h1>
+            <p className="text-sm text-theme-text50 mt-0.5">
+              {candidate.currentTitle ?? app?.job.title ?? "Candidate"}
+            </p>
+            <div className="flex items-center gap-1 mt-1.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <svg
+                  key={i}
+                  className="h-4 w-4 text-theme-text20"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Stage dropdown */}
+        {app && (
+          <div className="shrink-0">
+            <CandidateDetailClient
+              applicationId={app.id}
+              currentStageName={stageName}
+              candidateId={id}
+              existingNotes={existingNotes}
+              renderOnly="stage-select"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Pipeline progress */}
+      <div className="mx-8 mb-6 rounded-xl border border-theme-border bg-theme-surface px-8 py-5">
+        <div className="flex items-center">
+          {PIPELINE_STEPS.map((step, i) => (
+            <div key={step} className="flex items-center flex-1">
+              {/* Circle */}
+              <div className="flex flex-col items-center gap-1.5 shrink-0">
+                <div
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold border-2 transition-colors ${
+                    i < currentStep
+                      ? "bg-indigo-600 border-indigo-600 text-white"
+                      : i === currentStep
+                      ? "bg-indigo-600 border-indigo-600 text-white"
+                      : "border-theme-border3 text-theme-text40 bg-theme-surface"
+                  }`}
+                >
+                  {i + 1}
+                </div>
+                <span
+                  className={`text-xs font-medium ${
+                    i <= currentStep ? "text-indigo-400" : "text-theme-text40"
+                  }`}
+                >
+                  {step}
+                </span>
+              </div>
+              {/* Connector */}
+              {i < PIPELINE_STEPS.length - 1 && (
+                <div
+                  className={`h-0.5 flex-1 mx-2 rounded transition-colors ${
+                    i < currentStep ? "bg-indigo-600" : "bg-theme-border3"
+                  }`}
+                />
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Left: Profile */}
-        <div className="col-span-1 space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center mb-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-theme-text text-xl font-bold mb-3">
-                  {candidate.firstName[0]}{candidate.lastName[0]}
+      {/* Cards */}
+      <div className="grid grid-cols-2 gap-6 px-8 pb-8">
+        {/* Contact Information */}
+        <div className="rounded-xl border border-theme-border bg-theme-surface p-6">
+          <h2 className="text-sm font-semibold text-theme-text mb-5">Contact Information</h2>
+          <div className="space-y-4">
+            {candidate.email && (
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
+                  <MailIcon className="h-4 w-4 text-blue-400" />
                 </div>
-                <h2 className="font-bold text-theme-text">{candidate.firstName} {candidate.lastName}</h2>
-                {candidate.currentTitle && (
-                  <p className="text-sm text-theme-text50">{candidate.currentTitle}{candidate.currentCompany ? ` at ${candidate.currentCompany}` : ""}</p>
-                )}
-              </div>
-
-              <div className="space-y-2 text-sm">
-                <a href={`mailto:${candidate.email}`} className="flex items-center gap-2 text-theme-text60 hover:text-indigo-400">
-                  <MailIcon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{candidate.email}</span>
-                </a>
-                {candidate.phone && (
-                  <div className="flex items-center gap-2 text-theme-text60">
-                    <PhoneIcon className="h-4 w-4 shrink-0" />
-                    <span>{candidate.phone}</span>
-                  </div>
-                )}
-                {candidate.location && (
-                  <div className="flex items-center gap-2 text-theme-text60">
-                    <MapPinIcon className="h-4 w-4 shrink-0" />
-                    <span>{candidate.location}</span>
-                  </div>
-                )}
-                {candidate.linkedinUrl && (
-                  <a
-                    href={candidate.linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-400 hover:text-blue-800"
-                  >
-                    <LinkedinIcon className="h-4 w-4 shrink-0" />
-                    <span>LinkedIn Profile</span>
+                <div>
+                  <p className="text-xs text-theme-text40">Email</p>
+                  <a href={`mailto:${candidate.email}`} className="text-sm text-theme-text hover:text-indigo-400 transition-colors">
+                    {candidate.email}
                   </a>
-                )}
-                <div className="flex items-center gap-2 text-theme-text40 text-xs pt-1">
-                  <CalendarIcon className="h-3.5 w-3.5" />
-                  <span>Added {formatDate(candidate.createdAt)}</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {candidate.skills.length > 0 && (
-            <Card>
-              <CardHeader><CardTitle className="text-sm">Skills</CardTitle></CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex flex-wrap gap-1.5">
-                  {candidate.skills.map((skill) => (
-                    <span key={skill} className="rounded-full bg-indigo-500/10 text-indigo-300 px-2.5 py-0.5 text-xs font-medium">
-                      {skill}
-                    </span>
-                  ))}
+            )}
+            {candidate.phone && (
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-500/10">
+                  <PhoneIcon className="h-4 w-4 text-green-400" />
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {candidate.summary && (
-            <Card>
-              <CardHeader><CardTitle className="text-sm">Summary</CardTitle></CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-sm text-theme-text60 leading-relaxed">{candidate.summary}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {candidate.resumeText?.startsWith("RESUME_FILE:") && (() => {
-            const parts = candidate.resumeText.split(":");
-            const filename = parts[1] ?? "resume";
-            const base64 = parts.slice(2).join(":");
-            const ext = filename.split(".").pop()?.toLowerCase();
-            const mime = ext === "pdf" ? "application/pdf"
-              : ext === "docx" ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              : "application/msword";
-            const href = `data:${mime};base64,${base64}`;
-            return (
-              <Card>
-                <CardHeader><CardTitle className="text-sm">Resume / CV</CardTitle></CardHeader>
-                <CardContent className="pt-0">
+                <div>
+                  <p className="text-xs text-theme-text40">Phone</p>
+                  <p className="text-sm text-theme-text">{candidate.phone}</p>
+                </div>
+              </div>
+            )}
+            {resumeHref && (
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
+                  <FileTextIcon className="h-4 w-4 text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-theme-text40">Resume</p>
                   <a
-                    href={href}
-                    download={filename}
-                    className="flex items-center gap-2 text-indigo-400 hover:text-indigo-800 text-sm font-medium"
+                    href={resumeHref}
+                    download={resumeFilename ?? "resume"}
+                    className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
                   >
-                    <BriefcaseIcon className="h-4 w-4" />
-                    Download {filename}
+                    View Resume
                   </a>
-                </CardContent>
-              </Card>
-            );
-          })()}
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                <CalendarIcon className="h-4 w-4 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-xs text-theme-text40">Applied Date</p>
+                <p className="text-sm text-theme-text">
+                  {app ? formatDate(app.appliedAt) : formatDate(candidate.createdAt)}
+                </p>
+              </div>
+            </div>
+            {app && (
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10">
+                  <BriefcaseIcon className="h-4 w-4 text-indigo-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-theme-text40">Applied For</p>
+                  <Link href={`/jobs/${app.job.id}`} className="text-sm text-theme-text hover:text-indigo-400 transition-colors font-medium">
+                    {app.job.title}
+                  </Link>
+                  {(app.job.department || app.job.location) && (
+                    <p className="text-xs text-theme-text40">
+                      {[app.job.department, app.job.location].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Right: Applications + Notes */}
-        <div className="col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BriefcaseIcon className="h-4 w-4" />
-                Applications ({candidate.applications.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {candidate.applications.length === 0 ? (
-                <p className="text-sm text-theme-text40 py-4 text-center">No applications yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {candidate.applications.map((app) => (
-                    <div key={app.id} className="border border-theme-border rounded-lg p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <Link href={`/jobs/${app.job.id}`} className="font-medium text-theme-text hover:text-indigo-400 text-sm">
-                            {app.job.title}
-                          </Link>
-                          {app.job.department && (
-                            <span className="text-xs text-theme-text50 ml-2">· {app.job.department}</span>
-                          )}
-                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                            <Badge variant={statusVariant[app.status]}>{app.status}</Badge>
-                            {app.stage && (
-                              <span className="text-xs bg-theme-subtle text-theme-text60 px-2 py-0.5 rounded-full">
-                                {app.stage.name}
-                              </span>
-                            )}
-                            {app.aiScore !== null && (
-                              <span className={`text-xs font-semibold flex items-center gap-1 ${scoreToColor(app.aiScore)}`}>
-                                <SparklesIcon className="h-3 w-3" />
-                                {app.aiScore}% {scoreToLabel(app.aiScore)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-xs text-theme-text40">{formatDate(app.appliedAt)}</p>
-                          <CandidateActions applicationId={app.id} currentStatus={app.status} />
-                        </div>
-                      </div>
-                      {app.coverLetter && (
-                        <p className="text-xs text-theme-text50 mt-2 line-clamp-2 italic">"{app.coverLetter}"</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader><CardTitle className="text-sm">Notes</CardTitle></CardHeader>
-            <CardContent className="pt-0">
-              {candidate.notes.length === 0 ? (
-                <p className="text-sm text-theme-text40 py-2 text-center">No notes yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {candidate.notes.map((note) => (
-                    <div key={note.id} className="border-l-2 border-indigo-200 pl-3">
-                      <p className="text-sm text-theme-text80">{note.content}</p>
-                      <p className="text-xs text-theme-text40 mt-1">{note.author.name} · {formatDate(note.createdAt)}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {/* Notes & Feedback */}
+        <CandidateDetailClient
+          applicationId={app?.id ?? null}
+          currentStageName={stageName}
+          candidateId={id}
+          existingNotes={existingNotes}
+          renderOnly="notes"
+        />
       </div>
     </div>
   );
