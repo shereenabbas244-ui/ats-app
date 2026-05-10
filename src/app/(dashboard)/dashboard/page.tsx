@@ -97,7 +97,7 @@ export default async function DashboardPage() {
     {
       label: "Open Positions",
       value: openJobs,
-      sub: "+2 this month",
+      sub: openJobs === 0 ? "No open positions" : `${openJobs} active ${openJobs === 1 ? "job" : "jobs"}`,
       icon: BriefcaseIcon,
       accent: "from-indigo-600/20 to-indigo-600/5 border-indigo-500/20",
       iconColor: "text-indigo-400",
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
     {
       label: "Total Candidates",
       value: totalCandidates,
-      sub: "+5 this week",
+      sub: totalCandidates === 0 ? "No candidates yet" : `${totalCandidates} in talent pool`,
       icon: UsersIcon,
       accent: "from-blue-600/20 to-blue-600/5 border-blue-500/20",
       iconColor: "text-blue-400",
@@ -113,7 +113,7 @@ export default async function DashboardPage() {
     {
       label: "Interviews",
       value: interviewCount,
-      sub: "2 scheduled today",
+      sub: interviewCount === 0 ? "None scheduled" : `${interviewCount} in interview stage`,
       icon: CalendarIcon,
       accent: "from-amber-600/20 to-amber-600/5 border-amber-500/20",
       iconColor: "text-amber-400",
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
     {
       label: "Hired",
       value: hiredCount,
-      sub: "This quarter",
+      sub: hiredCount === 0 ? "No hires yet" : `${hiredCount} ${hiredCount === 1 ? "person" : "people"} hired`,
       icon: CheckCircleIcon,
       accent: "from-emerald-600/20 to-emerald-600/5 border-emerald-500/20",
       iconColor: "text-emerald-400",
