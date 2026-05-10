@@ -8,6 +8,7 @@ import {
   FileTextIcon,
   CalendarIcon,
   BriefcaseIcon,
+  LinkedinIcon,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { CandidateDetailClient } from "./CandidateDetailClient";
@@ -113,12 +114,13 @@ export default async function CandidateDetailPage({
           </div>
         </div>
 
-        {/* Stage dropdown */}
+        {/* Stage dropdown + status actions */}
         {app && (
-          <div className="shrink-0">
+          <div className="shrink-0 flex items-center gap-2">
             <CandidateDetailClient
               applicationId={app.id}
               currentStageName={stageName}
+              currentStatus={app.status}
               candidateId={id}
               existingNotes={existingNotes}
               renderOnly="stage-select"
@@ -242,6 +244,20 @@ export default async function CandidateDetailPage({
                 </div>
               </div>
             )}
+            {candidate.linkedinUrl && (
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
+                  <LinkedinIcon className="h-4 w-4 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-theme-text40">LinkedIn</p>
+                  <a href={candidate.linkedinUrl} target="_blank" rel="noopener noreferrer"
+                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                    View Profile
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -249,6 +265,7 @@ export default async function CandidateDetailPage({
         <CandidateDetailClient
           applicationId={app?.id ?? null}
           currentStageName={stageName}
+          currentStatus={app?.status ?? "ACTIVE"}
           candidateId={id}
           existingNotes={existingNotes}
           renderOnly="notes"
