@@ -14,10 +14,7 @@ export default async function CandidatesPage() {
         applications: {
           take: 1,
           orderBy: { appliedAt: "desc" },
-          select: {
-            id: true,
-            aiScore: true,
-            status: true,
+          include: {
             job: { select: { id: true, title: true } },
             stage: { select: { name: true } },
           },
@@ -48,8 +45,6 @@ export default async function CandidatesPage() {
     createdAt: c.createdAt.toISOString(),
     _count: c._count,
     applications: c.applications.map((a) => ({
-      id: a.id,
-      aiScore: a.aiScore,
       job: a.job,
       stage: a.stage,
       status: a.status,
