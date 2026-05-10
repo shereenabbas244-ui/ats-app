@@ -7,26 +7,43 @@ import { CandidatesClient } from "./CandidatesClient";
 export const dynamic = "force-dynamic";
 
 export default async function CandidatesPage() {
-  const candidates = await prisma.candidate.findMany({
-    include: {
-      _count: { select: { applications: true } },
-      applications: {
-        take: 2,
-        orderBy: { appliedAt: "desc" },
-        include: {
-          job: { select: { title: true } },
-          stage: { select: { name: true } },
+  const [candidates, jobs] = await Promise.all([
+    prisma.candidate.findMany({
+      include: {
+        _count: { select: { applications: true } },
+        applications: {
+          take: 1,
+          orderBy: { appliedAt: "desc" },
+          include: {
+            job: { select: { id: true, title: true } },
+            stage: { select: { name: true } },
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 500,
-  });
+      orderBy: { createdAt: "desc" },
+      take: 500,
+    }),
+    prisma.job.findMany({
+      where: { status: { in: ["OPEN", "PAUSED"] } },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, title: true },
+    }),
+  ]);
 
   const serialized = candidates.map((c) => ({
-    ...c,
+    id: c.id,
+    firstName: c.firstName,
+    lastName: c.lastName,
+    email: c.email,
+    phone: c.phone,
+    location: c.location,
+    currentTitle: c.currentTitle,
+    currentCompany: c.currentCompany,
+    source: c.source,
+    skills: c.skills,
+    linkedinUrl: c.linkedinUrl,
     createdAt: c.createdAt.toISOString(),
-    updatedAt: c.updatedAt.toISOString(),
+    _count: c._count,
     applications: c.applications.map((a) => ({
       job: a.job,
       stage: a.stage,
@@ -39,7 +56,7 @@ export default async function CandidatesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-theme-text">Candidates</h1>
-          <p className="text-sm text-theme-text50 mt-1">{candidates.length} total in talent pool</p>
+          <p className="text-sm text-theme-text50 mt-1">Track and manage candidates through your hiring pipeline</p>
         </div>
         <div className="flex gap-2">
           <Link href="/candidates/import">
@@ -57,7 +74,7 @@ export default async function CandidatesPage() {
         </div>
       </div>
 
-      <CandidatesClient candidates={serialized} />
+      <CandidatesClient candidates={serialized} jobs={jobs} />
     </div>
   );
 }
