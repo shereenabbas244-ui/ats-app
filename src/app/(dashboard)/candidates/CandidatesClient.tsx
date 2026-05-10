@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   SearchIcon,
   LayoutGridIcon,
@@ -12,9 +11,6 @@ import {
   ChevronRightIcon,
   MailIcon,
   PhoneIcon,
-  LinkedinIcon,
-  Trash2Icon,
-  MoreHorizontalIcon,
 } from "lucide-react";
 
 interface Application {
@@ -73,7 +69,13 @@ function starsToScore(stars: number): number {
   return Math.round((stars / 5) * 100);
 }
 
-function InteractiveStars({ applicationId, initialScore }: { applicationId: string | null; initialScore: number | null }) {
+function InteractiveStars({
+  applicationId,
+  initialScore,
+}: {
+  applicationId: string | null;
+  initialScore: number | null;
+}) {
   const [score, setScore] = useState<number | null>(initialScore);
   const [hover, setHover] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -104,9 +106,15 @@ function InteractiveStars({ applicationId, initialScore }: { applicationId: stri
           onClick={() => handleClick(i + 1)}
           onMouseEnter={() => applicationId && setHover(i + 1)}
           onMouseLeave={() => setHover(0)}
-          className={`transition-colors disabled:cursor-default ${applicationId ? "cursor-pointer" : "cursor-default"}`}
+          className={`transition-colors disabled:cursor-default ${
+            applicationId ? "cursor-pointer" : "cursor-default"
+          }`}
         >
-          <StarIcon className={`h-3.5 w-3.5 transition-colors ${i < filled ? "text-amber-400 fill-amber-400" : "text-theme-text20"}`} />
+          <StarIcon
+            className={`h-3.5 w-3.5 transition-colors ${
+              i < filled ? "text-amber-400 fill-amber-400" : "text-theme-text20"
+            }`}
+          />
         </button>
       ))}
     </div>
@@ -162,23 +170,17 @@ function BoardView({ candidates, jobFilter }: { candidates: Candidate[]; jobFilt
                       <div className="flex items-start gap-2.5">
                         <Avatar firstName={c.firstName} lastName={c.lastName} size="sm" />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-sm font-semibold text-theme-text leading-tight truncate">
-                              {c.firstName} {c.lastName}
-                            </p>
-                            {c.linkedinUrl && (
-                              <a href={c.linkedinUrl} target="_blank" rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="shrink-0 text-blue-400 hover:text-blue-300">
-                                <LinkedinIcon className="h-3 w-3" />
-                              </a>
-                            )}
-                          </div>
+                          <p className="text-sm font-semibold text-theme-text leading-tight">
+                            {c.firstName} {c.lastName}
+                          </p>
                           <p className="text-xs text-theme-text50 truncate mt-0.5">
                             {app?.job.title ?? c.currentTitle ?? "—"}
                           </p>
                           <div className="mt-1.5">
-                            <InteractiveStars applicationId={app?.id ?? null} initialScore={app?.aiScore ?? null} />
+                            <InteractiveStars
+                              applicationId={app?.id ?? null}
+                              initialScore={app?.aiScore ?? null}
+                            />
                           </div>
                         </div>
                       </div>
@@ -199,49 +201,8 @@ function BoardView({ candidates, jobFilter }: { candidates: Candidate[]; jobFilt
   );
 }
 
-// ---- List View (with multi-select + delete) ----
-function ListView({ candidates, onDeleted }: { candidates: Candidate[]; onDeleted: (ids: string[]) => void }) {
-  const router = useRouter();
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [deleting, setDeleting] = useState(false);
-  const [confirmBulk, setConfirmBulk] = useState(false);
-
-  const allSelected = candidates.length > 0 && candidates.every((c) => selected.has(c.id));
-
-  function toggleOne(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }
-
-  function toggleAll() {
-    if (allSelected) {
-      setSelected((prev) => { const next = new Set(prev); candidates.forEach((c) => next.delete(c.id)); return next; });
-    } else {
-      setSelected((prev) => { const next = new Set(prev); candidates.forEach((c) => next.add(c.id)); return next; });
-    }
-  }
-
-  async function deleteSelected() {
-    setDeleting(true);
-    const ids = [...selected];
-    await Promise.all(ids.map((id) => fetch(`/api/candidates/${id}`, { method: "DELETE" })));
-    setSelected(new Set());
-    setConfirmBulk(false);
-    setDeleting(false);
-    onDeleted(ids);
-    router.refresh();
-  }
-
-  async function deleteOne(id: string) {
-    if (!confirm("Delete this candidate?")) return;
-    await fetch(`/api/candidates/${id}`, { method: "DELETE" });
-    onDeleted([id]);
-    router.refresh();
-  }
-
+// ---- List View ----
+function ListView({ candidates }: { candidates: Candidate[] }) {
   if (candidates.length === 0) {
     return (
       <div className="py-12 text-center rounded-xl border border-theme-border">
@@ -251,30 +212,60 @@ function ListView({ candidates, onDeleted }: { candidates: Candidate[]; onDelete
   }
 
   return (
-    <div>
-      {/* Bulk action bar */}
-      <div className="flex items-center gap-3 mb-3 h-8">
-        <input
-          type="checkbox"
-          checked={allSelected}
-          onChange={toggleAll}
-          className="h-4 w-4 rounded border-theme-border3 text-indigo-400 cursor-pointer accent-indigo-500"
-        />
-        <span className="text-sm text-theme-text50">
-          {selected.size > 0 ? `${selected.size} selected` : `${candidates.length} candidate${candidates.length !== 1 ? "s" : ""}`}
-        </span>
-        {selected.size > 0 && (
-          confirmBulk ? (
-            <div className="flex items-center gap-2 ml-2">
-              <span className="text-sm text-theme-text50">Delete {selected.size}?</span>
-              <button onClick={deleteSelected} disabled={deleting}
-                className="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-medium disabled:opacity-50">
-                {deleting ? "Deleting…" : "Confirm"}
-              </button>
-              <button onClick={() => setConfirmBulk(false)}
-                className="text-xs border border-theme-border text-theme-text60 hover:bg-theme-hover px-3 py-1 rounded-lg font-medium">
-                Cancel
-              </button>
+    <div className="rounded-xl border border-theme-border bg-theme-surface overflow-hidden">
+      {candidates.map((c, idx) => {
+        const app = c.applications[0];
+        const stageName = app?.stage?.name ?? null;
+        const badgeCls = stageName
+          ? (STAGE_BADGE[stageName] ?? "bg-theme-subtle text-theme-text50 border-theme-border")
+          : null;
+
+        return (
+          <Link key={c.id} href={`/candidates/${c.id}`}>
+            <div
+              className={`flex items-center gap-4 px-5 py-4 hover:bg-theme-hover transition-colors cursor-pointer ${
+                idx < candidates.length - 1 ? "border-b border-theme-border" : ""
+              }`}
+            >
+              <Avatar firstName={c.firstName} lastName={c.lastName} />
+
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-theme-text">
+                  {c.firstName} {c.lastName}
+                </p>
+                <p className="text-xs text-theme-text50 mt-0.5 truncate">
+                  {c.currentTitle ?? app?.job.title ?? "—"}
+                </p>
+              </div>
+
+              {c.email && (
+                <div className="hidden md:flex items-center gap-1.5 text-xs text-theme-text50 min-w-0">
+                  <MailIcon className="h-3.5 w-3.5 shrink-0 text-theme-text30" />
+                  <span className="truncate max-w-[180px]">{c.email}</span>
+                </div>
+              )}
+
+              {c.phone && (
+                <div className="hidden lg:flex items-center gap-1.5 text-xs text-theme-text50 shrink-0">
+                  <PhoneIcon className="h-3.5 w-3.5 shrink-0 text-theme-text30" />
+                  <span>{c.phone}</span>
+                </div>
+              )}
+
+              {stageName && badgeCls && (
+                <span className={`shrink-0 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${badgeCls}`}>
+                  {stageName}
+                </span>
+              )}
+
+              <div className="shrink-0" onClick={(e) => e.preventDefault()}>
+                <InteractiveStars
+                  applicationId={app?.id ?? null}
+                  initialScore={app?.aiScore ?? null}
+                />
+              </div>
+
+              <ChevronRightIcon className="h-4 w-4 text-theme-text30 shrink-0" />
             </div>
           ) : (
             <button onClick={() => setConfirmBulk(true)}
@@ -373,24 +364,21 @@ function ListView({ candidates, onDeleted }: { candidates: Candidate[]; onDelete
 }
 
 // ---- Main ----
-export function CandidatesClient({ candidates: initialCandidates, jobs }: { candidates: Candidate[]; jobs: Job[] }) {
+export function CandidatesClient({ candidates, jobs }: { candidates: Candidate[]; jobs: Job[] }) {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"board" | "list">("list");
   const [jobFilter, setJobFilter] = useState("ALL");
   const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates);
 
   const filtered = useMemo(() => {
-    let list = candidates;
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter((c) =>
-        `${c.firstName} ${c.lastName}`.toLowerCase().includes(q) ||
-        (c.email ?? "").toLowerCase().includes(q) ||
-        (c.currentTitle ?? "").toLowerCase().includes(q) ||
-        (c.location ?? "").toLowerCase().includes(q)
-      );
-    }
-    return list;
+    if (!search.trim()) return candidates;
+    const q = search.toLowerCase();
+    return candidates.filter((c) =>
+      `${c.firstName} ${c.lastName}`.toLowerCase().includes(q) ||
+      (c.email ?? "").toLowerCase().includes(q) ||
+      (c.currentTitle ?? "").toLowerCase().includes(q) ||
+      (c.location ?? "").toLowerCase().includes(q)
+    );
   }, [candidates, search]);
 
   function handleDeleted(ids: string[]) {
@@ -449,7 +437,7 @@ export function CandidatesClient({ candidates: initialCandidates, jobs }: { cand
       {view === "board" ? (
         <BoardView candidates={filtered} jobFilter={jobFilter} />
       ) : (
-        <ListView candidates={filtered} onDeleted={handleDeleted} />
+        <ListView candidates={filtered} />
       )}
     </>
   );
