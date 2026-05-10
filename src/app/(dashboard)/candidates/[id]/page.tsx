@@ -55,10 +55,10 @@ export default async function CandidateDetailPage({
   return (
     <div className="p-8 max-w-5xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/candidates" className="text-white/40 hover:text-white/60 transition-colors">
+        <Link href="/candidates" className="text-theme-text40 hover:text-theme-text60 transition-colors">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-theme-text">
           {candidate.firstName} {candidate.lastName}
         </h1>
         <Badge variant="outline">{candidate.source.replace(/_/g, " ")}</Badge>
@@ -73,28 +73,28 @@ export default async function CandidateDetailPage({
           <Card>
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center mb-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-xl font-bold mb-3">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-theme-text text-xl font-bold mb-3">
                   {candidate.firstName[0]}{candidate.lastName[0]}
                 </div>
-                <h2 className="font-bold text-white">{candidate.firstName} {candidate.lastName}</h2>
+                <h2 className="font-bold text-theme-text">{candidate.firstName} {candidate.lastName}</h2>
                 {candidate.currentTitle && (
-                  <p className="text-sm text-white/50">{candidate.currentTitle}{candidate.currentCompany ? ` at ${candidate.currentCompany}` : ""}</p>
+                  <p className="text-sm text-theme-text50">{candidate.currentTitle}{candidate.currentCompany ? ` at ${candidate.currentCompany}` : ""}</p>
                 )}
               </div>
 
               <div className="space-y-2 text-sm">
-                <a href={`mailto:${candidate.email}`} className="flex items-center gap-2 text-white/60 hover:text-indigo-400">
+                <a href={`mailto:${candidate.email}`} className="flex items-center gap-2 text-theme-text60 hover:text-indigo-400">
                   <MailIcon className="h-4 w-4 shrink-0" />
                   <span className="truncate">{candidate.email}</span>
                 </a>
                 {candidate.phone && (
-                  <div className="flex items-center gap-2 text-white/60">
+                  <div className="flex items-center gap-2 text-theme-text60">
                     <PhoneIcon className="h-4 w-4 shrink-0" />
                     <span>{candidate.phone}</span>
                   </div>
                 )}
                 {candidate.location && (
-                  <div className="flex items-center gap-2 text-white/60">
+                  <div className="flex items-center gap-2 text-theme-text60">
                     <MapPinIcon className="h-4 w-4 shrink-0" />
                     <span>{candidate.location}</span>
                   </div>
@@ -110,7 +110,7 @@ export default async function CandidateDetailPage({
                     <span>LinkedIn Profile</span>
                   </a>
                 )}
-                <div className="flex items-center gap-2 text-white/40 text-xs pt-1">
+                <div className="flex items-center gap-2 text-theme-text40 text-xs pt-1">
                   <CalendarIcon className="h-3.5 w-3.5" />
                   <span>Added {formatDate(candidate.createdAt)}</span>
                 </div>
@@ -137,7 +137,7 @@ export default async function CandidateDetailPage({
             <Card>
               <CardHeader><CardTitle className="text-sm">Summary</CardTitle></CardHeader>
               <CardContent className="pt-0">
-                <p className="text-sm text-white/60 leading-relaxed">{candidate.summary}</p>
+                <p className="text-sm text-theme-text60 leading-relaxed">{candidate.summary}</p>
               </CardContent>
             </Card>
           )}
@@ -180,23 +180,23 @@ export default async function CandidateDetailPage({
             </CardHeader>
             <CardContent className="pt-0">
               {candidate.applications.length === 0 ? (
-                <p className="text-sm text-white/40 py-4 text-center">No applications yet.</p>
+                <p className="text-sm text-theme-text40 py-4 text-center">No applications yet.</p>
               ) : (
                 <div className="space-y-3">
                   {candidate.applications.map((app) => (
-                    <div key={app.id} className="border border-white/[0.06] rounded-lg p-4">
+                    <div key={app.id} className="border border-theme-border rounded-lg p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <Link href={`/jobs/${app.job.id}`} className="font-medium text-white hover:text-indigo-400 text-sm">
+                          <Link href={`/jobs/${app.job.id}`} className="font-medium text-theme-text hover:text-indigo-400 text-sm">
                             {app.job.title}
                           </Link>
                           {app.job.department && (
-                            <span className="text-xs text-white/50 ml-2">· {app.job.department}</span>
+                            <span className="text-xs text-theme-text50 ml-2">· {app.job.department}</span>
                           )}
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                             <Badge variant={statusVariant[app.status]}>{app.status}</Badge>
                             {app.stage && (
-                              <span className="text-xs bg-white/[0.06] text-white/60 px-2 py-0.5 rounded-full">
+                              <span className="text-xs bg-theme-subtle text-theme-text60 px-2 py-0.5 rounded-full">
                                 {app.stage.name}
                               </span>
                             )}
@@ -209,12 +209,12 @@ export default async function CandidateDetailPage({
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-xs text-white/40">{formatDate(app.appliedAt)}</p>
+                          <p className="text-xs text-theme-text40">{formatDate(app.appliedAt)}</p>
                           <CandidateActions applicationId={app.id} currentStatus={app.status} />
                         </div>
                       </div>
                       {app.coverLetter && (
-                        <p className="text-xs text-white/50 mt-2 line-clamp-2 italic">"{app.coverLetter}"</p>
+                        <p className="text-xs text-theme-text50 mt-2 line-clamp-2 italic">"{app.coverLetter}"</p>
                       )}
                     </div>
                   ))}
@@ -227,13 +227,13 @@ export default async function CandidateDetailPage({
             <CardHeader><CardTitle className="text-sm">Notes</CardTitle></CardHeader>
             <CardContent className="pt-0">
               {candidate.notes.length === 0 ? (
-                <p className="text-sm text-white/40 py-2 text-center">No notes yet.</p>
+                <p className="text-sm text-theme-text40 py-2 text-center">No notes yet.</p>
               ) : (
                 <div className="space-y-3">
                   {candidate.notes.map((note) => (
                     <div key={note.id} className="border-l-2 border-indigo-200 pl-3">
-                      <p className="text-sm text-white/80">{note.content}</p>
-                      <p className="text-xs text-white/40 mt-1">{note.author.name} · {formatDate(note.createdAt)}</p>
+                      <p className="text-sm text-theme-text80">{note.content}</p>
+                      <p className="text-xs text-theme-text40 mt-1">{note.author.name} · {formatDate(note.createdAt)}</p>
                     </div>
                   ))}
                 </div>

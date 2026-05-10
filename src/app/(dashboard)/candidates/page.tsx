@@ -38,8 +38,8 @@ export default async function CandidatesPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Candidates</h1>
-          <p className="text-sm text-white/50 mt-1">{candidates.length} total in talent pool</p>
+          <h1 className="text-2xl font-bold text-theme-text">Candidates</h1>
+          <p className="text-sm text-theme-text50 mt-1">{candidates.length} total in talent pool</p>
         </div>
         <div className="flex gap-2">
           <Link href="/candidates/import">

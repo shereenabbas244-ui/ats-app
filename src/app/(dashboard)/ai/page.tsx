@@ -89,13 +89,13 @@ export default function AIPage() {
   };
 
   const textareaClass =
-    "w-full rounded-lg border border-white/15 px-3 py-2 text-sm text-white placeholder-white/20 bg-white/[0.04] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+    "w-full rounded-lg border border-theme-border3 px-3 py-2 text-sm text-theme-text placeholder-theme-text20 bg-theme-input focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
   return (
     <div className="p-8 max-w-5xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">AI Tools</h1>
-        <p className="text-sm text-white/50 mt-1">
+        <h1 className="text-2xl font-bold text-theme-text">AI Tools</h1>
+        <p className="text-sm text-theme-text50 mt-1">
           Powered by Claude Opus 4.6 — parse resumes, score candidates, generate interview questions
         </p>
       </div>
@@ -184,12 +184,12 @@ export default function AIPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-lg font-semibold text-white">
+                  <p className="text-lg font-semibold text-theme-text">
                     {parsedResume.firstName} {parsedResume.lastName}
                   </p>
-                  <p className="text-sm text-white/50">{parsedResume.email}</p>
+                  <p className="text-sm text-theme-text50">{parsedResume.email}</p>
                   {parsedResume.currentTitle && (
-                    <p className="text-sm text-white/60 mt-1">
+                    <p className="text-sm text-theme-text60 mt-1">
                       {parsedResume.currentTitle}
                       {parsedResume.currentCompany ? ` at ${parsedResume.currentCompany}` : ""}
                     </p>
@@ -197,7 +197,7 @@ export default function AIPage() {
                 </div>
                 {parsedResume.skills && parsedResume.skills.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-white/50 uppercase mb-1.5">Skills</p>
+                    <p className="text-xs font-medium text-theme-text50 uppercase mb-1.5">Skills</p>
                     <div className="flex flex-wrap gap-1.5">
                       {parsedResume.skills.map((skill) => (
                         <Badge key={skill} variant="secondary">{skill}</Badge>
@@ -207,8 +207,8 @@ export default function AIPage() {
                 )}
                 {parsedResume.summary && (
                   <div>
-                    <p className="text-xs font-medium text-white/50 uppercase mb-1">Summary</p>
-                    <p className="text-sm text-white/60">{parsedResume.summary}</p>
+                    <p className="text-xs font-medium text-theme-text50 uppercase mb-1">Summary</p>
+                    <p className="text-sm text-theme-text60">{parsedResume.summary}</p>
                   </div>
                 )}
               </CardContent>
@@ -230,16 +230,16 @@ export default function AIPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-white/50 mb-2">Score Breakdown</p>
+                  <p className="text-sm font-medium text-theme-text50 mb-2">Score Breakdown</p>
                   {Object.entries(scoreResult.breakdown).map(([key, val]) => (
                     <div key={key} className="mb-2">
-                      <div className="flex justify-between text-xs text-white/60 mb-1">
+                      <div className="flex justify-between text-xs text-theme-text60 mb-1">
                         <span className="capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</span>
                         <span className="font-medium">{val}/100</span>
                       </div>
-                      <div className="h-1.5 rounded-full bg-white/[0.06]">
+                      <div className="h-1.5 rounded-full bg-theme-subtle">
                         <div
-                          className="h-1.5 rounded-full bg-indigo-500/100 transition-all"
+                          className="h-1.5 rounded-full bg-indigo-500 transition-all"
                           style={{ width: `${val}%` }}
                         />
                       </div>
@@ -248,7 +248,7 @@ export default function AIPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-white/50 uppercase mb-1.5">Strengths</p>
+                  <p className="text-xs font-medium text-theme-text50 uppercase mb-1.5">Strengths</p>
                   {scoreResult.strengths.map((s, i) => (
                     <p key={i} className="text-sm text-green-300 flex items-start gap-1.5 mb-1">
                       <span className="text-green-500 mt-0.5">✓</span> {s}
@@ -258,7 +258,7 @@ export default function AIPage() {
 
                 {scoreResult.gaps.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-white/50 uppercase mb-1.5">Gaps</p>
+                    <p className="text-xs font-medium text-theme-text50 uppercase mb-1.5">Gaps</p>
                     {scoreResult.gaps.map((g, i) => (
                       <p key={i} className="text-sm text-red-400 flex items-start gap-1.5 mb-1">
                         <span className="mt-0.5">✗</span> {g}
@@ -267,13 +267,13 @@ export default function AIPage() {
                   </div>
                 )}
 
-                <div className="rounded-lg bg-white/[0.03] p-3">
-                  <p className="text-xs font-medium text-white/50 uppercase mb-1">AI Summary</p>
-                  <p className="text-sm text-white/80">{scoreResult.summary}</p>
+                <div className="rounded-lg bg-theme-faint p-3">
+                  <p className="text-xs font-medium text-theme-text50 uppercase mb-1">AI Summary</p>
+                  <p className="text-sm text-theme-text80">{scoreResult.summary}</p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-white/50">Recommendation:</span>
+                  <span className="text-sm text-theme-text50">Recommendation:</span>
                   <Badge
                     variant={
                       scoreResult.recommendation === "strong_yes" || scoreResult.recommendation === "yes"
@@ -285,7 +285,7 @@ export default function AIPage() {
                   >
                     {scoreResult.recommendation.replace("_", " ").toUpperCase()}
                   </Badge>
-                  <span className="text-sm font-medium text-white/80">
+                  <span className="text-sm font-medium text-theme-text80">
                     · {scoreToLabel(scoreResult.overall)}
                   </span>
                 </div>
@@ -300,11 +300,11 @@ export default function AIPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-xs font-medium text-white/50 uppercase mb-2">Suggested Questions</p>
+                  <p className="text-xs font-medium text-theme-text50 uppercase mb-2">Suggested Questions</p>
                   {insights.interviewQuestions.map((q, i) => (
                     <div key={i} className="flex gap-2 mb-2">
                       <span className="text-xs font-bold text-indigo-400 shrink-0 mt-0.5">{i + 1}.</span>
-                      <p className="text-sm text-white/80">{q}</p>
+                      <p className="text-sm text-theme-text80">{q}</p>
                     </div>
                   ))}
                 </div>
@@ -317,10 +317,10 @@ export default function AIPage() {
           )}
 
           {!parsedResume && !scoreResult && (
-            <div className="rounded-xl border-2 border-dashed border-white/[0.08] p-12 text-center">
-              <SparklesIcon className="h-12 w-12 text-white/30 mx-auto mb-4" />
-              <p className="text-white/50 font-medium">AI Results Appear Here</p>
-              <p className="text-sm text-white/40 mt-1">Parse a resume or score a candidate to see AI analysis</p>
+            <div className="rounded-xl border-2 border-dashed border-theme-border2 p-12 text-center">
+              <SparklesIcon className="h-12 w-12 text-theme-text30 mx-auto mb-4" />
+              <p className="text-theme-text50 font-medium">AI Results Appear Here</p>
+              <p className="text-sm text-theme-text40 mt-1">Parse a resume or score a candidate to see AI analysis</p>
             </div>
           )}
         </div>
