@@ -348,98 +348,33 @@ function ListView({
                 </button>
               </div>
             </div>
-          ) : (
-            <button onClick={() => setConfirmBulk(true)}
-              className="ml-2 flex items-center gap-1.5 text-sm text-red-500 hover:text-red-400 border border-red-500/20 hover:border-red-500/40 px-3 py-1 rounded-lg transition-colors">
-              <Trash2Icon className="h-3.5 w-3.5" />
-              Delete {selected.size} selected
-            </button>
-          )
-        )}
-      </div>
-
-      <div className="rounded-xl border border-theme-border bg-theme-surface overflow-hidden">
-        {candidates.map((c, idx) => {
-          const app = c.applications[0];
-          const stageName = app?.stage?.name ?? null;
-          const badgeCls = stageName
-            ? (STAGE_BADGE[stageName] ?? "bg-theme-subtle text-theme-text50 border-theme-border")
-            : null;
-
-          return (
-            <div
-              key={c.id}
-              className={`flex items-center gap-3 px-4 py-3.5 hover:bg-theme-hover transition-colors ${
-                idx < candidates.length - 1 ? "border-b border-theme-border" : ""
-              } ${selected.has(c.id) ? "bg-indigo-500/5" : ""}`}
-            >
-              {/* Checkbox */}
-              <input
-                type="checkbox"
-                checked={selected.has(c.id)}
-                onChange={() => toggleOne(c.id)}
-                onClick={(e) => e.stopPropagation()}
-                className="h-4 w-4 rounded border-theme-border3 cursor-pointer accent-indigo-500 shrink-0"
-              />
-
-              {/* Row content — clickable */}
-              <Link href={`/candidates/${c.id}`} className="flex flex-1 items-center gap-4 min-w-0">
-                <Avatar firstName={c.firstName} lastName={c.lastName} />
-
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-theme-text">{c.firstName} {c.lastName}</p>
-                  <p className="text-xs text-theme-text50 mt-0.5 truncate">
-                    {c.currentTitle ?? app?.job.title ?? "—"}
-                  </p>
-                </div>
-
-                {c.email && (
-                  <div className="hidden md:flex items-center gap-1.5 text-xs text-theme-text50 min-w-0">
-                    <MailIcon className="h-3.5 w-3.5 shrink-0 text-theme-text30" />
-                    <span className="truncate max-w-[170px]">{c.email}</span>
-                  </div>
-                )}
-
-                {c.phone && (
-                  <div className="hidden lg:flex items-center gap-1.5 text-xs text-theme-text50 shrink-0">
-                    <PhoneIcon className="h-3.5 w-3.5 shrink-0 text-theme-text30" />
-                    <span>{c.phone}</span>
-                  </div>
-                )}
-
-                {stageName && badgeCls && (
-                  <span className={`shrink-0 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${badgeCls}`}>
-                    {stageName}
-                  </span>
-                )}
-
-                <div className="shrink-0" onClick={(e) => e.preventDefault()}>
-                  <InteractiveStars applicationId={app?.id ?? null} initialScore={app?.aiScore ?? null} />
-                </div>
-
-                <ChevronRightIcon className="h-4 w-4 text-theme-text30 shrink-0" />
-              </Link>
-
-              {/* Actions: LinkedIn + Delete */}
-              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                {c.linkedinUrl && (
-                  <a href={c.linkedinUrl} target="_blank" rel="noopener noreferrer"
-                    className="p-1.5 rounded-lg text-blue-400 hover:bg-blue-500/10 transition-colors">
-                    <LinkedinIcon className="h-4 w-4" />
-                  </a>
-                )}
-                <button
-                  onClick={() => deleteOne(c.id)}
-                  className="p-1.5 rounded-lg text-theme-text30 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                  title="Delete candidate"
-                >
-                  <Trash2Icon className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
           );
         })}
       </div>
+
+      {/* Bulk delete confirm */}
+      {confirmBulk && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="rounded-2xl border border-theme-border bg-theme-bg p-6 shadow-2xl max-w-sm w-full mx-4">
+            <h3 className="text-base font-semibold text-theme-text mb-2">Delete {selected.size} candidates?</h3>
+            <p className="text-sm text-theme-text50 mb-5">This action cannot be undone.</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmBulk(false)}
+                className="rounded-lg border border-theme-border px-4 py-2 text-sm text-theme-text hover:bg-theme-hover transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={bulkDelete}
+                className="rounded-lg bg-red-600 hover:bg-red-500 text-white px-4 py-2 text-sm font-semibold transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -450,6 +385,8 @@ export function CandidatesClient({ candidates: initialCandidates, jobs }: { cand
   const [view, setView] = useState<"board" | "list">("list");
   const [jobFilter, setJobFilter] = useState("ALL");
   const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmBulk, setConfirmBulk] = useState(false);
 
   const filtered = useMemo(() => {
     let result = candidates;
@@ -485,11 +422,6 @@ export function CandidatesClient({ candidates: initialCandidates, jobs }: { cand
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-  }
-
-  function handleDeleted(ids: string[]) {
-    const set = new Set(ids);
-    setCandidates((prev) => prev.filter((c) => !set.has(c.id)));
   }
 
   return (
