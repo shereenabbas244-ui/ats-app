@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserIcon, LockIcon, BellIcon, MailIcon, CheckIcon } from "lucide-react";
+import { UserIcon, LockIcon, BellIcon, MailIcon, CheckIcon, FileTextIcon, ChevronDownIcon } from "lucide-react";
 
 interface OrgSettings {
   hrEmail: string;
@@ -10,6 +10,12 @@ interface OrgSettings {
   notifyStageChange: boolean;
   notifyHired: boolean;
   notifyRejected: boolean;
+  templateAppSubject: string;
+  templateAppBody: string;
+  templateHiredSubject: string;
+  templateHiredBody: string;
+  templateRejectedSubject: string;
+  templateRejectedBody: string;
 }
 
 interface Props {
@@ -44,6 +50,27 @@ function SaveBadge({ show }: { show: boolean }) {
   );
 }
 
+const TEMPLATE_DEFS = [
+  {
+    label: "Application Received",
+    desc: "Sent to the candidate when they submit an application",
+    subjectKey: "templateAppSubject" as const,
+    bodyKey: "templateAppBody" as const,
+  },
+  {
+    label: "Candidate Hired",
+    desc: "Sent to the candidate when marked as Hired",
+    subjectKey: "templateHiredSubject" as const,
+    bodyKey: "templateHiredBody" as const,
+  },
+  {
+    label: "Candidate Rejected",
+    desc: "Sent to the candidate when marked as Rejected",
+    subjectKey: "templateRejectedSubject" as const,
+    bodyKey: "templateRejectedBody" as const,
+  },
+];
+
 export function SettingsClient({ userName, userEmail, orgSettings: initial }: Props) {
   // Profile
   const [name, setName] = useState(userName);
@@ -58,10 +85,17 @@ export function SettingsClient({ userName, userEmail, orgSettings: initial }: Pr
   const [pwError, setPwError] = useState("");
   const [pwSaved, setPwSaved] = useState(false);
 
-  // Email settings
+  // Email settings + templates
   const [org, setOrg] = useState<OrgSettings>(initial);
   const [emailSaving, setEmailSaving] = useState(false);
   const [emailSaved, setEmailSaved] = useState(false);
+
+  // Template accordion
+  const [openTemplate, setOpenTemplate] = useState<string | null>(null);
+
+  // Template save
+  const [templateSaving, setTemplateSaving] = useState(false);
+  const [templateSaved, setTemplateSaved] = useState(false);
 
   async function saveProfile() {
     if (!name.trim() || profileSaving) return;
@@ -114,12 +148,43 @@ export function SettingsClient({ userName, userEmail, orgSettings: initial }: Pr
       await fetch("/api/settings/email", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(org),
+        body: JSON.stringify({
+          hrEmail: org.hrEmail,
+          emailFromName: org.emailFromName,
+          notifyNewApplication: org.notifyNewApplication,
+          notifyStageChange: org.notifyStageChange,
+          notifyHired: org.notifyHired,
+          notifyRejected: org.notifyRejected,
+        }),
       });
       setEmailSaved(true);
       setTimeout(() => setEmailSaved(false), 3000);
     } finally {
       setEmailSaving(false);
+    }
+  }
+
+  async function saveTemplates() {
+    if (templateSaving) return;
+    setTemplateSaving(true);
+    setTemplateSaved(false);
+    try {
+      await fetch("/api/settings/email", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          templateAppSubject: org.templateAppSubject,
+          templateAppBody: org.templateAppBody,
+          templateHiredSubject: org.templateHiredSubject,
+          templateHiredBody: org.templateHiredBody,
+          templateRejectedSubject: org.templateRejectedSubject,
+          templateRejectedBody: org.templateRejectedBody,
+        }),
+      });
+      setTemplateSaved(true);
+      setTimeout(() => setTemplateSaved(false), 3000);
+    } finally {
+      setTemplateSaving(false);
     }
   }
 
@@ -270,6 +335,71 @@ export function SettingsClient({ userName, userEmail, orgSettings: initial }: Pr
             className="rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 transition-colors"
           >
             {emailSaving ? "Saving…" : "Save Settings"}
+          </button>
+        </div>
+      </div>
+
+      {/* Email Templates */}
+      <div className="rounded-xl border border-theme-border bg-theme-surface p-6">
+        <div className="flex items-center gap-2 mb-2">
+          <FileTextIcon className="h-4 w-4 text-indigo-400" />
+          <h2 className="text-base font-semibold text-theme-text">Email Templates</h2>
+        </div>
+        <p className="text-xs text-theme-text40 mb-5">
+          Customize the emails sent to candidates. Use <code className="bg-theme-faint px-1 py-0.5 rounded text-indigo-400">{"{candidateName}"}</code> and <code className="bg-theme-faint px-1 py-0.5 rounded text-indigo-400">{"{jobTitle}"}</code> as placeholders.
+        </p>
+
+        <div className="divide-y divide-theme-border border border-theme-border rounded-lg overflow-hidden">
+          {TEMPLATE_DEFS.map(({ label, desc, subjectKey, bodyKey }) => {
+            const isOpen = openTemplate === label;
+            return (
+              <div key={label}>
+                <button
+                  type="button"
+                  onClick={() => setOpenTemplate(isOpen ? null : label)}
+                  className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-theme-hover transition-colors text-left"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-theme-text">{label}</p>
+                    <p className="text-xs text-theme-text40 mt-0.5">{desc}</p>
+                  </div>
+                  <ChevronDownIcon className={`h-4 w-4 text-theme-text40 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                </button>
+                {isOpen && (
+                  <div className="px-4 pb-4 pt-1 bg-theme-faint space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-theme-text50 mb-1.5">Subject Line</label>
+                      <input
+                        value={org[subjectKey]}
+                        onChange={(e) => setOrg({ ...org, [subjectKey]: e.target.value })}
+                        className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2.5 text-sm text-theme-text focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-theme-text50 mb-1.5">Message Body</label>
+                      <textarea
+                        value={org[bodyKey]}
+                        onChange={(e) => setOrg({ ...org, [bodyKey]: e.target.value })}
+                        rows={5}
+                        className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2.5 text-sm text-theme-text focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-y"
+                      />
+                      <p className="text-xs text-theme-text40 mt-1">Separate paragraphs with a blank line.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center justify-end gap-3 mt-5">
+          <SaveBadge show={templateSaved} />
+          <button
+            onClick={saveTemplates}
+            disabled={templateSaving}
+            className="rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 transition-colors"
+          >
+            {templateSaving ? "Saving…" : "Save Templates"}
           </button>
         </div>
       </div>
