@@ -28,8 +28,13 @@ export default async function CandidateDetailPage({
       applications: {
         include: {
           job: {
-            select: { id: true, title: true, department: true, location: true },
-            include: { stages: { orderBy: { order: "asc" }, select: { id: true, name: true } } },
+            select: {
+              id: true,
+              title: true,
+              department: true,
+              location: true,
+              stages: { orderBy: { order: "asc" }, select: { id: true, name: true } },
+            },
           },
           stage: { select: { id: true, name: true, color: true } },
         },
