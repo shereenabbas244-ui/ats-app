@@ -2,23 +2,28 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { UserIcon, ShieldIcon, GlobeIcon, UsersIcon } from "lucide-react";
+import { ShieldIcon, GlobeIcon, UsersIcon } from "lucide-react";
 import { TeamSection } from "./TeamSection";
+import { SettingsClient } from "./SettingsClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const session = await auth();
 
-  const [members, invitations] = await Promise.all([
+  const [members, invitations, orgSettings] = await Promise.all([
     prisma.user.findMany({
       select: { id: true, name: true, email: true, role: true, createdAt: true },
       orderBy: { createdAt: "asc" },
     }),
     prisma.invitation.findMany({ orderBy: { createdAt: "desc" } }),
+    prisma.orgSettings.upsert({
+      where: { id: "singleton" },
+      create: { id: "singleton", updatedAt: new Date() },
+      update: {},
+    }),
   ]);
 
-  // Filter out invitations for emails that already have accounts
   const memberEmails = new Set(members.map((m) => m.email));
   const pendingInvitations = invitations.filter((i) => !memberEmails.has(i.email));
 
@@ -34,38 +39,22 @@ export default async function SettingsPage() {
 
   return (
     <div className="p-8 max-w-2xl">
-      <h1 className="text-2xl font-bold text-theme-text mb-8">Settings</h1>
+      <h1 className="text-2xl font-bold text-theme-text mb-2">Settings</h1>
+      <p className="text-sm text-theme-text50 mb-8">Manage your account and application preferences</p>
 
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <UserIcon className="h-4 w-4" />
-              Account
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b border-theme-border">
-              <div>
-                <p className="text-sm font-medium text-theme-text">Name</p>
-                <p className="text-sm text-theme-text50">{session?.user?.name ?? "—"}</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-theme-border">
-              <div>
-                <p className="text-sm font-medium text-theme-text">Email</p>
-                <p className="text-sm text-theme-text50">{session?.user?.email ?? "—"}</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="text-sm font-medium text-theme-text">Role</p>
-                <p className="text-sm text-theme-text50">Administrator</p>
-              </div>
-              <Badge variant="default">Admin</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <SettingsClient
+          userName={session?.user?.name ?? ""}
+          userEmail={session?.user?.email ?? ""}
+          orgSettings={{
+            hrEmail: orgSettings.hrEmail,
+            emailFromName: orgSettings.emailFromName,
+            notifyNewApplication: orgSettings.notifyNewApplication,
+            notifyStageChange: orgSettings.notifyStageChange,
+            notifyHired: orgSettings.notifyHired,
+            notifyRejected: orgSettings.notifyRejected,
+          }}
+        />
 
         <Card>
           <CardHeader>

@@ -1,13 +1,12 @@
 import nodemailer from "nodemailer";
+import { prisma } from "@/lib/db";
 
 // ─── Transport ───────────────────────────────────────────────────────────────
 // Uses Brevo (formerly Sendinblue) SMTP — free tier: 300 emails/day.
 // Required Vercel env vars:
-//   BREVO_SMTP_USER   — your Brevo SMTP login (the email you registered with)
-//   BREVO_SMTP_PASS   — the SMTP key from Brevo → SMTP & API → SMTP
-// Optional:
-//   EMAIL_FROM        — e.g. "Lobah Careers <careers@lobah.com>"
-//   HR_EMAIL          — recipient for internal alerts, default hr@lobah.com
+//   BREVO_SMTP_USER  — your Brevo SMTP login
+//   BREVO_SMTP_PASS  — SMTP key from Brevo → SMTP & API
+//   EMAIL_FROM       — sender address e.g. careers@lobah.com
 
 function getTransport() {
   const user = process.env.BREVO_SMTP_USER;
@@ -24,16 +23,28 @@ function getTransport() {
   });
 }
 
-const FROM = process.env.EMAIL_FROM
-  // Fall back to the SMTP user itself — always accepted by Brevo as sender
-  ?? (process.env.BREVO_SMTP_USER ? `Lobah Careers <${process.env.BREVO_SMTP_USER}>` : "Lobah Careers <careers@lobah.com>");
-const HR_EMAIL = process.env.HR_EMAIL ?? "hr@lobah.com";
+async function getOrgSettings() {
+  try {
+    return await prisma.orgSettings.upsert({
+      where: { id: "singleton" },
+      create: { id: "singleton", updatedAt: new Date() },
+      update: {},
+    });
+  } catch {
+    return null;
+  }
+}
 
 async function send(options: { to: string; subject: string; html: string }) {
   const transport = getTransport();
   if (!transport) return;
-  // Let errors propagate so Vercel logs show the real reason for failure
-  const info = await transport.sendMail({ from: FROM, ...options });
+
+  const org = await getOrgSettings();
+  const fromName = org?.emailFromName ?? "Lobah Careers";
+  const fromAddress = process.env.EMAIL_FROM ?? "careers@lobah.com";
+  const from = `${fromName} <${fromAddress}>`;
+
+  const info = await transport.sendMail({ from, ...options });
   console.log("[email] Sent to", options.to, "—", info.messageId);
 }
 
@@ -78,9 +89,12 @@ export async function sendNewApplicationAlert({
   jobTitle: string;
   applicationId: string;
 }) {
+  const org = await getOrgSettings();
+  if (org && !org.notifyNewApplication) return;
+  const hrEmail = org?.hrEmail ?? process.env.HR_EMAIL ?? "hr@lobah.com";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ats-app-git-master-shereenabbas244-4279s-projects.vercel.app";
   await send({
-    to: HR_EMAIL,
+    to: hrEmail,
     subject: `New application — ${jobTitle}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:40px;">
@@ -123,6 +137,10 @@ export async function sendStatusUpdate({
 
   const msg = statusMessages[status];
   if (!msg) return;
+
+  const org = await getOrgSettings();
+  if (org && status === "HIRED" && !org.notifyHired) return;
+  if (org && status === "REJECTED" && !org.notifyRejected) return;
 
   await send({
     to: candidateEmail,
