@@ -65,7 +65,7 @@ export default async function DashboardPage() {
       prisma.job.count({ where: { status: "OPEN" } }),
       prisma.candidate.count(),
       prisma.application.count({ where: { status: "HIRED" } }),
-      prisma.stage.findMany({
+      prisma.pipelineStage.findMany({
         select: { name: true, _count: { select: { applications: { where: { status: "ACTIVE" } } } } },
       }),
       prisma.application.findMany({
