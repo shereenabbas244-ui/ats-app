@@ -16,12 +16,12 @@ import {
 import { formatRelativeTime } from "@/lib/utils";
 
 const PIPELINE_STAGES = [
-  { status: "ACTIVE",    label: "Applied",   bar: "bg-indigo-500",  badge: "bg-indigo-500/20 text-indigo-500 dark:text-indigo-300" },
-  { status: "SCREENING", label: "Screening", bar: "bg-amber-500",   badge: "bg-amber-500/20 text-amber-600 dark:text-amber-300" },
-  { status: "INTERVIEW", label: "Interview", bar: "bg-purple-500",  badge: "bg-purple-500/20 text-purple-600 dark:text-purple-300" },
-  { status: "OFFER",     label: "Offer",     bar: "bg-emerald-500", badge: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300" },
-  { status: "HIRED",     label: "Hired",     bar: "bg-green-500",   badge: "bg-green-500/20 text-green-600 dark:text-green-300" },
-  { status: "REJECTED",  label: "Rejected",  bar: "bg-red-500",     badge: "bg-red-500/20 text-red-600 dark:text-red-300" },
+  { key: "Applied",   bar: "bg-indigo-500",  badge: "bg-indigo-500/20 text-indigo-500 dark:text-indigo-300" },
+  { key: "Screening", bar: "bg-amber-500",   badge: "bg-amber-500/20 text-amber-600 dark:text-amber-300" },
+  { key: "Interview", bar: "bg-purple-500",  badge: "bg-purple-500/20 text-purple-600 dark:text-purple-300" },
+  { key: "Offer",     bar: "bg-emerald-500", badge: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300" },
+  { key: "Hired",     bar: "bg-green-500",   badge: "bg-green-500/20 text-green-600 dark:text-green-300" },
+  { key: "Rejected",  bar: "bg-red-500",     badge: "bg-red-500/20 text-red-600 dark:text-red-300" },
 ];
 
 function Stars({ score }: { score: number }) {
@@ -60,12 +60,14 @@ function activityLabel(app: {
 export default async function DashboardPage() {
   const session = await auth();
 
-  const [openJobs, totalCandidates, hiredCount, statusCounts, recentActivity, topCandidates, interviewCount] =
+  const [openJobs, totalCandidates, hiredCount, stageCounts, recentActivity, topCandidates, interviewCount, rejectedCount] =
     await Promise.all([
       prisma.job.count({ where: { status: "OPEN" } }),
       prisma.candidate.count(),
       prisma.application.count({ where: { status: "HIRED" } }),
-      prisma.application.groupBy({ by: ["status"], _count: { id: true } }),
+      prisma.stage.findMany({
+        select: { name: true, _count: { select: { applications: { where: { status: "ACTIVE" } } } } },
+      }),
       prisma.application.findMany({
         take: 6,
         orderBy: { appliedAt: "desc" },
@@ -88,10 +90,15 @@ export default async function DashboardPage() {
       prisma.application.count({
         where: { stage: { name: { contains: "Interview" } } },
       }),
+      prisma.application.count({ where: { status: "REJECTED" } }),
     ]);
 
-  const countByStatus = Object.fromEntries(statusCounts.map((s) => [s.status, s._count.id]));
-  const maxCount = Math.max(...Object.values(countByStatus), 1);
+  const countByStage: Record<string, number> = Object.fromEntries(
+    stageCounts.map((s) => [s.name, s._count.applications])
+  );
+  countByStage["Hired"] = hiredCount;
+  countByStage["Rejected"] = rejectedCount;
+  const maxCount = Math.max(...Object.values(countByStage), 1);
 
   const stats = [
     {
@@ -168,14 +175,14 @@ export default async function DashboardPage() {
               <h2 className="font-semibold text-theme-text">Pipeline Overview</h2>
             </div>
             <div className="space-y-4">
-              {PIPELINE_STAGES.map(({ status, label, bar, badge }) => {
-                const count = countByStatus[status] ?? 0;
+              {PIPELINE_STAGES.map(({ key, bar, badge }) => {
+                const count = countByStage[key] ?? 0;
                 const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0;
                 return (
-                  <div key={status} className="space-y-1.5">
+                  <div key={key} className="space-y-1.5">
                     <div className="flex items-center justify-between text-sm">
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${badge}`}>
-                        {label}
+                        {key}
                       </span>
                       <span className="text-theme-text40 text-xs">
                         {count} {count === 1 ? "candidate" : "candidates"}
