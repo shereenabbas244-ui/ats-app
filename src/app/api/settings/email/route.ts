@@ -10,6 +10,12 @@ const schema = z.object({
   notifyStageChange: z.boolean().optional(),
   notifyHired: z.boolean().optional(),
   notifyRejected: z.boolean().optional(),
+  templateAppSubject: z.string().min(1).optional(),
+  templateAppBody: z.string().min(1).optional(),
+  templateHiredSubject: z.string().min(1).optional(),
+  templateHiredBody: z.string().min(1).optional(),
+  templateRejectedSubject: z.string().min(1).optional(),
+  templateRejectedBody: z.string().min(1).optional(),
 });
 
 export async function GET() {

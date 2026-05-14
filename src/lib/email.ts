@@ -2,11 +2,6 @@ import nodemailer from "nodemailer";
 import { prisma } from "@/lib/db";
 
 // ─── Transport ───────────────────────────────────────────────────────────────
-// Uses Brevo (formerly Sendinblue) SMTP — free tier: 300 emails/day.
-// Required Vercel env vars:
-//   BREVO_SMTP_USER  — your Brevo SMTP login
-//   BREVO_SMTP_PASS  — SMTP key from Brevo → SMTP & API
-//   EMAIL_FROM       — sender address e.g. careers@lobah.com
 
 function getTransport() {
   const user = process.env.BREVO_SMTP_USER;
@@ -48,6 +43,33 @@ async function send(options: { to: string; subject: string; html: string }) {
   console.log("[email] Sent to", options.to, "—", info.messageId);
 }
 
+// ─── Template helpers ─────────────────────────────────────────────────────────
+
+function renderTemplate(template: string, vars: Record<string, string>) {
+  return Object.entries(vars).reduce(
+    (t, [k, v]) => t.replaceAll(`{${k}}`, v),
+    template
+  );
+}
+
+function bodyToHtml(body: string) {
+  return body
+    .split(/\n\n+/)
+    .map((p) => `<p style="color:#ccc;line-height:1.6;">${p.replace(/\n/g, "<br/>")}</p>`)
+    .join("");
+}
+
+function wrapEmail(title: string, bodyHtml: string) {
+  return `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0d0d0d;color:#fff;padding:40px;border-radius:12px;">
+      <h1 style="font-size:22px;font-weight:900;margin:0 0 8px;color:#fff;">${title}</h1>
+      <p style="color:#E55B1F;font-size:14px;margin:0 0 24px;">Lobah Games</p>
+      ${bodyHtml}
+      <p style="color:#555;font-size:12px;margin-top:32px;">© ${new Date().getFullYear()} Lobah Games. From Saudi Arabia to the world 🌍</p>
+    </div>
+  `;
+}
+
 // ─── Email templates ─────────────────────────────────────────────────────────
 
 export async function sendApplicationConfirmation({
@@ -59,23 +81,18 @@ export async function sendApplicationConfirmation({
   candidateEmail: string;
   jobTitle: string;
 }) {
-  await send({
-    to: candidateEmail,
-    subject: `Application received — ${jobTitle}`,
-    html: `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0d0d0d;color:#fff;padding:40px;border-radius:12px;">
-        <h1 style="font-size:24px;font-weight:900;margin:0 0 8px;color:#fff;">Application Received!</h1>
-        <p style="color:#E55B1F;font-size:14px;margin:0 0 24px;">Lobah Games</p>
-        <p style="color:#ccc;line-height:1.6;">Hi <strong style="color:#fff;">${candidateName}</strong>,</p>
-        <p style="color:#ccc;line-height:1.6;">Thank you for applying for the <strong style="color:#fff;">${jobTitle}</strong> position at Lobah Games. We have received your application and will review it shortly.</p>
-        <p style="color:#ccc;line-height:1.6;">We will be in touch if your profile matches our requirements.</p>
-        <div style="margin:32px 0;padding:20px;background:#1a1a1a;border-radius:8px;border-left:4px solid #E55B1F;">
-          <p style="margin:0;color:#ccc;font-size:14px;">You applied for: <strong style="color:#fff;">${jobTitle}</strong></p>
-        </div>
-        <p style="color:#555;font-size:12px;margin-top:32px;">© ${new Date().getFullYear()} Lobah Games. From Saudi Arabia to the world 🌍</p>
-      </div>
-    `,
-  });
+  const org = await getOrgSettings();
+  const vars = { candidateName, jobTitle };
+  const subject = renderTemplate(
+    org?.templateAppSubject ?? "Application received — {jobTitle}",
+    vars
+  );
+  const bodyText = renderTemplate(
+    org?.templateAppBody ??
+      "Thank you for applying for the {jobTitle} position at Lobah Games. We have received your application and will review it shortly.\n\nWe will be in touch if your profile matches our requirements.",
+    vars
+  );
+  await send({ to: candidateEmail, subject, html: wrapEmail(subject, bodyToHtml(bodyText)) });
 }
 
 export async function sendNewApplicationAlert({
@@ -120,41 +137,49 @@ export async function sendStatusUpdate({
   jobTitle: string;
   status: string;
 }) {
-  const statusMessages: Record<string, { subject: string; message: string }> = {
-    HIRED: {
-      subject: `Congratulations! Offer for ${jobTitle}`,
-      message: "We are thrilled to inform you that you have been selected for this position. Our team will reach out to you shortly with the next steps.",
-    },
-    REJECTED: {
-      subject: `Update on your application — ${jobTitle}`,
-      message: "After careful consideration, we have decided to move forward with other candidates for this role. We appreciate your interest in Lobah Games and encourage you to apply for future positions.",
-    },
-    ON_HOLD: {
-      subject: `Application update — ${jobTitle}`,
-      message: "Your application is currently on hold while we continue our review process. We will update you as soon as we have more information.",
-    },
-  };
-
-  const msg = statusMessages[status];
-  if (!msg) return;
-
   const org = await getOrgSettings();
   if (org && status === "HIRED" && !org.notifyHired) return;
   if (org && status === "REJECTED" && !org.notifyRejected) return;
 
-  await send({
-    to: candidateEmail,
-    subject: msg.subject,
-    html: `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0d0d0d;color:#fff;padding:40px;border-radius:12px;">
-        <h1 style="font-size:22px;font-weight:900;margin:0 0 24px;color:#fff;">${msg.subject}</h1>
-        <p style="color:#ccc;line-height:1.6;">Hi <strong style="color:#fff;">${candidateName}</strong>,</p>
-        <p style="color:#ccc;line-height:1.6;">${msg.message}</p>
-        <p style="color:#ccc;line-height:1.6;">Position: <strong style="color:#fff;">${jobTitle}</strong></p>
-        <p style="color:#555;font-size:12px;margin-top:32px;">© ${new Date().getFullYear()} Lobah Games. From Saudi Arabia to the world 🌍</p>
-      </div>
-    `,
-  });
+  const vars = { candidateName, jobTitle };
+
+  if (status === "HIRED") {
+    const subject = renderTemplate(
+      org?.templateHiredSubject ?? "Congratulations! Offer for {jobTitle}",
+      vars
+    );
+    const bodyText = renderTemplate(
+      org?.templateHiredBody ??
+        "We are thrilled to inform you that you have been selected for this position. Our team will reach out to you shortly with the next steps.",
+      vars
+    );
+    await send({ to: candidateEmail, subject, html: wrapEmail(subject, bodyToHtml(bodyText)) });
+    return;
+  }
+
+  if (status === "REJECTED") {
+    const subject = renderTemplate(
+      org?.templateRejectedSubject ?? "Update on your application — {jobTitle}",
+      vars
+    );
+    const bodyText = renderTemplate(
+      org?.templateRejectedBody ??
+        "After careful consideration, we have decided to move forward with other candidates for this role. We appreciate your interest in Lobah Games and encourage you to apply for future positions.",
+      vars
+    );
+    await send({ to: candidateEmail, subject, html: wrapEmail(subject, bodyToHtml(bodyText)) });
+    return;
+  }
+
+  if (status === "ON_HOLD") {
+    const subject = `Application update — ${jobTitle}`;
+    const message = "Your application is currently on hold while we continue our review process. We will update you as soon as we have more information.";
+    await send({
+      to: candidateEmail,
+      subject,
+      html: wrapEmail(subject, bodyToHtml(message)),
+    });
+  }
 }
 
 export async function sendTeamInvite({

@@ -218,14 +218,20 @@ enum NoteType {
 }
 
 model OrgSettings {
-  id                   String   @id @default("singleton")
-  hrEmail              String   @default("hr@lobah.com")
-  emailFromName        String   @default("Lobah Careers")
-  notifyNewApplication Boolean  @default(true)
-  notifyStageChange    Boolean  @default(false)
-  notifyHired          Boolean  @default(true)
-  notifyRejected       Boolean  @default(false)
-  updatedAt            DateTime @updatedAt
+  id                      String   @id @default("singleton")
+  hrEmail                 String   @default("hr@lobah.com")
+  emailFromName           String   @default("Lobah Careers")
+  notifyNewApplication    Boolean  @default(true)
+  notifyStageChange       Boolean  @default(false)
+  notifyHired             Boolean  @default(true)
+  notifyRejected          Boolean  @default(false)
+  templateAppSubject      String   @default("Application received — {jobTitle}")
+  templateAppBody         String   @default("Thank you for applying for the {jobTitle} position at Lobah Games. We have received your application and will review it shortly.\n\nWe will be in touch if your profile matches our requirements.") @db.Text
+  templateHiredSubject    String   @default("Congratulations! Offer for {jobTitle}")
+  templateHiredBody       String   @default("We are thrilled to inform you that you have been selected for this position. Our team will reach out to you shortly with the next steps.") @db.Text
+  templateRejectedSubject String   @default("Update on your application — {jobTitle}")
+  templateRejectedBody    String   @default("After careful consideration, we have decided to move forward with other candidates for this role. We appreciate your interest in Lobah Games and encourage you to apply for future positions.") @db.Text
+  updatedAt               DateTime @updatedAt
 }
 
 model Activity {

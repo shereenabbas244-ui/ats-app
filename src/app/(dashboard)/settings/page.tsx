@@ -53,6 +53,12 @@ export default async function SettingsPage() {
             notifyStageChange: orgSettings.notifyStageChange,
             notifyHired: orgSettings.notifyHired,
             notifyRejected: orgSettings.notifyRejected,
+            templateAppSubject: orgSettings.templateAppSubject,
+            templateAppBody: orgSettings.templateAppBody,
+            templateHiredSubject: orgSettings.templateHiredSubject,
+            templateHiredBody: orgSettings.templateHiredBody,
+            templateRejectedSubject: orgSettings.templateRejectedSubject,
+            templateRejectedBody: orgSettings.templateRejectedBody,
           }}
         />
 
