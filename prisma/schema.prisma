@@ -217,6 +217,17 @@ enum NoteType {
   AI_ANALYSIS
 }
 
+model OrgSettings {
+  id                   String   @id @default("singleton")
+  hrEmail              String   @default("hr@lobah.com")
+  emailFromName        String   @default("Lobah Careers")
+  notifyNewApplication Boolean  @default(true)
+  notifyStageChange    Boolean  @default(false)
+  notifyHired          Boolean  @default(true)
+  notifyRejected       Boolean  @default(false)
+  updatedAt            DateTime @updatedAt
+}
+
 model Activity {
   id            String       @id @default(cuid())
   type          ActivityType
