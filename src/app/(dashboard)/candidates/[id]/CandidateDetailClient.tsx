@@ -12,12 +12,18 @@ interface Note {
   createdAt: string;
 }
 
+interface StageOption {
+  id: string;
+  name: string;
+}
+
 interface Props {
   applicationId: string | null;
   currentStageName: string;
   currentStatus: string;
   candidateId: string;
   existingNotes: Note[];
+  stageOptions?: StageOption[];
   renderOnly: "stage-select" | "notes";
 }
 
@@ -29,6 +35,7 @@ export function CandidateDetailClient({
   currentStatus,
   candidateId,
   existingNotes,
+  stageOptions,
   renderOnly,
 }: Props) {
   const router = useRouter();
@@ -39,10 +46,24 @@ export function CandidateDetailClient({
   const [statusLoading, setStatusLoading] = useState(false);
   const [notes, setNotes] = useState<Note[]>(existingNotes);
 
+  const [stageLoading, setStageLoading] = useState(false);
+
   async function handleStageChange(newStage: string) {
-    if (!applicationId || newStage === stage) return;
-    setStage(newStage);
-    router.refresh();
+    if (!applicationId || newStage === stage || stageLoading) return;
+    const stageId = stageOptions?.find((s) => s.name === newStage)?.id;
+    if (!stageId) return;
+    setStageLoading(true);
+    try {
+      await fetch(`/api/applications/${applicationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stageId }),
+      });
+      setStage(newStage);
+      router.refresh();
+    } finally {
+      setStageLoading(false);
+    }
   }
 
   async function handleStatusChange(newStatus: string) {
@@ -92,10 +113,13 @@ export function CandidateDetailClient({
         <div className="relative">
           <select
             value={stage}
+            disabled={stageLoading}
             onChange={(e) => handleStageChange(e.target.value)}
-            className="appearance-none rounded-xl border border-theme-border bg-theme-surface pl-4 pr-10 py-2.5 text-sm font-medium text-theme-text focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer min-w-[140px]"
+            className="appearance-none rounded-xl border border-theme-border bg-theme-surface pl-4 pr-10 py-2.5 text-sm font-medium text-theme-text focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer min-w-[140px] disabled:opacity-60"
           >
-            {STAGE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+            {(stageOptions ?? STAGE_OPTIONS.map((n) => ({ id: n, name: n }))).map((s) => (
+              <option key={s.id} value={s.name}>{s.name}</option>
+            ))}
           </select>
           <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-theme-text40" />
         </div>

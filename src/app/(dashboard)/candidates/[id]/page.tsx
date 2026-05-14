@@ -27,7 +27,10 @@ export default async function CandidateDetailPage({
     include: {
       applications: {
         include: {
-          job: { select: { id: true, title: true, department: true, location: true } },
+          job: {
+            select: { id: true, title: true, department: true, location: true },
+            include: { stages: { orderBy: { order: "asc" }, select: { id: true, name: true } } },
+          },
           stage: { select: { id: true, name: true, color: true } },
         },
         orderBy: { appliedAt: "desc" },
@@ -123,6 +126,7 @@ export default async function CandidateDetailPage({
               currentStatus={app.status}
               candidateId={id}
               existingNotes={existingNotes}
+              stageOptions={app.job.stages}
               renderOnly="stage-select"
             />
           </div>
