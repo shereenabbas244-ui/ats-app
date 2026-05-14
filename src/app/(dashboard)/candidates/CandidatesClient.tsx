@@ -252,7 +252,6 @@ function ListView({
 
   return (
     <div>
-      {/* Toolbar */}
       <div className="flex items-center gap-3 mb-3 px-1">
         <input
           type="checkbox"
@@ -352,7 +351,6 @@ function ListView({
         })}
       </div>
 
-      {/* Bulk delete confirm */}
       {confirmBulk && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="rounded-2xl border border-theme-border bg-theme-bg p-6 shadow-2xl max-w-sm w-full mx-4">

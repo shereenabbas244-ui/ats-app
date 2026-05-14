@@ -44,9 +44,8 @@ export function CandidateDetailClient({
   const [noteText, setNoteText] = useState("");
   const [saving, setSaving] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
-  const [notes, setNotes] = useState<Note[]>(existingNotes);
-
   const [stageLoading, setStageLoading] = useState(false);
+  const [notes, setNotes] = useState<Note[]>(existingNotes);
 
   async function handleStageChange(newStage: string) {
     if (!applicationId || newStage === stage || stageLoading) return;
@@ -109,7 +108,6 @@ export function CandidateDetailClient({
   if (renderOnly === "stage-select") {
     return (
       <div className="flex items-center gap-2">
-        {/* Stage select */}
         <div className="relative">
           <select
             value={stage}
@@ -124,7 +122,6 @@ export function CandidateDetailClient({
           <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-theme-text40" />
         </div>
 
-        {/* Status action buttons */}
         {applicationId && status !== "HIRED" && status !== "REJECTED" && (
           <>
             <button
